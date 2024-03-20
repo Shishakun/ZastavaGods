@@ -9,17 +9,17 @@
       <div class="flex justify-between px-16 pt-6">
         <div class="flex flex-col items-center">
           <div
-            class="flex flex-col border-[1px] border-activeText w-[35vw] h-[55vh] rounded-xl"
+            class="flex flex-col border-[1px] border-activeText w-[30vw] h-[67vh] rounded-xl"
           ></div>
           <div
             class="w-24 h-24 border-[1px] border-activeText rounded-full mt-4"
           ></div>
         </div>
         <div
-          class="flex flex-col border-[1px] justify-between border-activeText w-[30vw] h-[80vh] rounded-xl"
+          class="flex flex-col border-[1px] justify-between border-activeText w-[35vw] h-[83vh] rounded-xl"
         >
-          <img src="../img/translator.jpg" class="rounded-t-xl h-[70vh]" />
-          <div class="text-activeText p-4 text-xl">
+          <img src="../img/translator.jpg" class="rounded-t-xl h-[68vh]" />
+          <div class="text-activeText px-4 py-6 text-xl">
             <p>ФИО: Шишкарев Захар Андреевич</p>
             <p>Отдел: 2 ЦС КГГ</p>
             <p>Уровень допуска: 2</p>

@@ -27,10 +27,10 @@
           class="w-full px-2 overflow-y-scroll h-[80vh] custom-scrollbar duration-500"
         >
           <div
-            class="text-activeText pt-2 w-full duration-500 flex flex-col gap-1"
+            class="text-activeText pt-2 w-full duration-500 flex flex-col gap-2"
           >
             <button
-              class="border-2 flex gap-3 w-full rounded-xl px-3 py-2 items-center duration-00"
+              class="border-2 flex gap-3 w-full rounded-xl px-3 py-2 items-center duration-300"
               v-for="i in 30"
               :key="i"
               :class="[
@@ -60,7 +60,7 @@
       class="ml-72 w-5/6 outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500"
     >
       <p
-        class="text-activeText duration-500 text-center pt-2 font-bold text-2xl"
+        class="text-activeText duration-500 text-center pt-4 font-bold text-2xl"
       >
         Журнал событий
       </p>

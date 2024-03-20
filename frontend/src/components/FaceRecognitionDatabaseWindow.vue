@@ -1,5 +1,5 @@
 <template>
-  <div class="flex w-full justify-center p-6 gap-4 duration-500 ">
+  <div class="flex w-full justify-center p-6 gap-4 duration-500">
     <div class="fixed w-64 left-6">
       <SidebarMain />
     </div>
@@ -85,13 +85,17 @@
       </div>
       <div class="w-5/6 flex justify-end pt-2">
         <div>
-          <div class="text-activeText" v-for="(file, index) in file_list">
+          <div
+            class="text-activeText"
+            v-for="(file, index) in file_list"
+            :key="index"
+          >
             {{ index + 1 }}. {{ file.name }}
           </div>
         </div>
       </div>
       <div class="w-5/6 mb-10">
-        <div class="flex justify-center pt-3" v-for="i in 10">
+        <div class="flex justify-center pt-3" v-for="i in 10" :key="i">
           <transition
             enter-active-class="transition ease-in-out duration-500 transform"
             enter-from-class="-translate-y-[50px]"

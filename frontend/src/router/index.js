@@ -5,23 +5,23 @@ const routes = [
     path: "/face_recognition",
     name: "AudioRecognitionService",
 
-    component: () => import("../views/AudioRecognitionService.vue"),
+    component: () => import("../views/FaceRecognitionService.vue"),
   },
   {
     path: "/sound_recognition",
-    name: "ScanningDocs",
+    name: "Yamnet",
 
-    component: () => import("../views/DocumentsScan.vue"),
+    component: () => import("../views/YamnetService.vue"),
   },
   {
     path: "/face_database",
-    name: "SeacrhDocs",
+    name: "FaceRecognition",
 
-    component: () => import("../views/SearchDocument.vue"),
+    component: () => import("../views/FaceRecognitionDatabase.vue"),
   },
   {
     path: "/",
-    name: "ObjectDetectionService",
+    name: "ObjectDetection",
 
     component: () => import("../views/ObjectDetectionService.vue"),
   },

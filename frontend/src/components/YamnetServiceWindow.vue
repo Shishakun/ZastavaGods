@@ -18,12 +18,12 @@
       </div>
       <div class="flex items-center justify-center gap-4 px-14 pt-4">
         <div
-          class="flex flex-col border-[1px] border-activeText w-[35vw] h-[35vh] rounded-xl"
+          class="flex flex-col border-[1px] border-activeText w-1/2 h-[35vh] rounded-xl"
         >
           <img src="../img/123123.jpg" class="h-[35vh] rounded-xl p-1" />
         </div>
         <div
-          class="flex flex-col border-[1px] border-activeText w-[35vw] h-[35vh] rounded-xl"
+          class="flex flex-col border-[1px] border-activeText w-1/2 h-[35vh] rounded-xl"
         >
           <img src="../img/123123.jpg" class="h-[35vh] rounded-xl p-1" />
         </div>

@@ -38,8 +38,8 @@ class FaceRecognition:
 
     def encode_faces(self):
         # Load images from 'people' directory
-        for image in os.listdir("../inputs/people"):
-            face_image = face_recognition.load_image_file(f"../inputs/people/{image}")
+        for image in os.listdir("./inputs/people"):
+            face_image = face_recognition.load_image_file(f"./inputs/people/{image}")
             self.face_encoding = face_recognition.face_encodings(face_image)[0]
             logger.debug(self.face_encoding)
 

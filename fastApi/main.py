@@ -1,10 +1,12 @@
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi import FastAPI, UploadFile
+
 from inputs.yamnetrec import process_audio
 
 from inputs.facerecognition import *
+
 face_recognition = FaceRecognition()
 app = FastAPI()
 
@@ -20,10 +22,12 @@ app.add_middleware(
 
 logger = logging.getLogger(__name__)
 
+
 @app.get("/yamnet")
 async def get_yamnet_result():
     result = process_audio()
     return {"result": result}
+
 
 @app.post("/facerecognition")
 async def recognize_face(image: UploadFile):
@@ -32,8 +36,11 @@ async def recognize_face(image: UploadFile):
         image_bytes = await image.read()
         image_data = np.frombuffer(image_bytes, dtype=np.uint8)
         image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
-
-        return face_recognition.run_recognition(image)
+        face = face_recognition.run_recognition(image)
+        if face is not None:
+            return JSONResponse(face, status_code=200)
+        else:
+            return JSONResponse("name or confident not found")
     else:
         return {"error": "Invalid image format. JPEG format is required."}
 

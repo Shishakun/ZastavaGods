@@ -18,9 +18,10 @@
             ></video>
           </div>
           <button
-            @click="takeScreenshot"
+            @click="takeSnapshot"
             class="w-24 h-24 border-[3px] border-red-600 rounded-full mt-4 bg-neutral-400"
           ></button>
+          <p class="text-4xl text-white">{{ serverResponse }}</p>
         </div>
         <div
           class="flex flex-col border-[1px] justify-between border-activeText w-[35vw] h-[83vh] rounded-xl"
@@ -52,61 +53,40 @@ export default {
   },
   data() {
     return {
-      isVideo: false,
-      isAudio: false,
-      uploadFile: "",
-      files: [],
-      url: "",
-      text_language: "",
-      text_massage: "",
-      isLoading: false,
-      isReady: false,
-      isError: false,
+      serverResponse: "",
     };
   },
-  computed: {
-    classes() {
-      return this.isVideo ? "w-8/12" : ["w-8/12", "h-[570px]", "pt-8"];
-    },
-    audioClasses() {
-      return this.isAudio
-        ? ["flex", "flex-col", "mb-[600px]", "pt-8"]
-        : ["flex", "flex-col", "pt-8"];
-    },
-  },
   methods: {
-    takeScreenshot() {
-      // Capture screenshot from the video
+    async takeSnapshot() {
+      const video = this.$refs.video;
       const canvas = document.createElement("canvas");
-      canvas.width = this.$refs.video.videoWidth;
-      canvas.height = this.$refs.video.videoHeight;
-      canvas
-        .getContext("2d")
-        .drawImage(this.$refs.video, 0, 0, canvas.width, canvas.height);
-      const image = canvas.toDataURL("image/jpeg");
+      const context = canvas.getContext("2d");
 
-      // Send the captured image to the server for face recognition
-      axios
-        .post("http://localhost:8000/facerecognition", {
-          image: image,
-        })
-        .then((response) => {
-          console.log("Upload successful:", response.data);
-        })
-        .catch((error) => {
-          console.error("Error uploading file:", error);
-        });
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const image = canvas.toDataURL("image/png");
+
+      const response = await fetch("http://localhost:8000/facerecognition", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ image }),
+      });
+
+      const data = await response.json();
+      this.serverResponse = data.message;
     },
   },
-  mounted() {
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((stream) => {
-        this.$refs.video.srcObject = stream;
-      })
-      .catch((error) => {
-        console.log("Error accessing webcam:", error);
-      });
+  async mounted() {
+    const constraints = { video: true };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+    const video = this.$refs.video;
+    video.srcObject = stream;
+    video.play();
   },
 };
 </script>

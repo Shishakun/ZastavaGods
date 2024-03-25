@@ -2,9 +2,12 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi import FastAPI, UploadFile
-
+from loguru import logger
 from inputs.yamnetrec import process_audio
-
+import numpy as np
+import io
+from PIL import Image
+import base64
 from inputs.facerecognition import *
 
 face_recognition = FaceRecognition()
@@ -20,8 +23,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-logger = logging.getLogger(__name__)
-
 
 @app.get("/yamnet")
 async def get_yamnet_result():
@@ -30,19 +31,18 @@ async def get_yamnet_result():
 
 
 @app.post("/facerecognition")
-async def recognize_face(image: UploadFile):
-    content_type = image.content_type
-    if content_type == 'image/jpeg':
-        image_bytes = await image.read()
-        image_data = np.frombuffer(image_bytes, dtype=np.uint8)
-        image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
-        face = face_recognition.run_recognition(image)
-        if face is not None:
-            return JSONResponse(face, status_code=200)
-        else:
-            return JSONResponse("name or confident not found")
-    else:
-        return {"error": "Invalid image format. JPEG format is required."}
+async def upload_image(image: dict):
+    # image_data = io.BytesIO(base64.b64decode(image.split(",")[1]))
+    # img = Image.open(image_data)
+    # img_array = np.array(img)
+    # # Process the image with the FaceRecognition class
+    # face_recognition = FaceRecognition()
+    # face = face_recognition.run_recognition(img_array)
+    # if face is not None:
+    #     return JSONResponse(face, status_code=200)
+    # else:
+    #     return JSONResponse("name or confident not found")
+    return {"message": "Принято"}
 
 
 if __name__ == "__main__":

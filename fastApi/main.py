@@ -1,13 +1,9 @@
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi import FastAPI, UploadFile
 from loguru import logger
 from inputs.yamnetrec import process_audio
-import numpy as np
-import io
-from PIL import Image
-import base64
+from pydantic import BaseModel
 from inputs.facerecognition import *
 
 face_recognition = FaceRecognition()

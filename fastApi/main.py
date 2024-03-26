@@ -24,6 +24,10 @@ app.add_middleware(
 )
 
 
+class ImageRequest(BaseModel):
+    image: str
+
+
 @app.get("/yamnet")
 async def get_yamnet_result():
     result = process_audio()
@@ -31,17 +35,8 @@ async def get_yamnet_result():
 
 
 @app.post("/facerecognition")
-async def upload_image(image: dict):
-    # image_data = io.BytesIO(base64.b64decode(image.split(",")[1]))
-    # img = Image.open(image_data)
-    # img_array = np.array(img)
-    # # Process the image with the FaceRecognition class
-    # face_recognition = FaceRecognition()
-    # face = face_recognition.run_recognition(img_array)
-    # if face is not None:
-    #     return JSONResponse(face, status_code=200)
-    # else:
-    #     return JSONResponse("name or confident not found")
+async def upload_image(image_data: ImageRequest):
+    image = image_data.image
     return {"message": "Принято"}
 
 

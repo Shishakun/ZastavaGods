@@ -1,6 +1,11 @@
 import uvicorn
+import base64
+import io
+import numpy as np
+from PIL import Image
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from loguru import logger
 from inputs.yamnetrec import process_audio
 from pydantic import BaseModel
@@ -32,8 +37,25 @@ async def get_yamnet_result():
 
 @app.post("/facerecognition")
 async def upload_image(image_data: ImageRequest):
-    image = image_data.image
-    return {"message": "Принято"}
+    try:
+        image = image_data.image.split(",")[1]
+
+        image_bytes = base64.b64decode(image)
+
+        img = Image.open(io.BytesIO(image_bytes))
+        img_array = np.array(img)
+        face_recognition = FaceRecognition()
+        face = face_recognition.run_recognition(img_array)
+
+        response_data = {"message": face}
+        return JSONResponse(content=response_data, status_code=200)
+
+    except Exception as e:
+        logger.error(str(e))
+        return JSONResponse(
+            content={"message": "An error occurred during face recognition"},
+            status_code=500,
+        )
 
 
 if __name__ == "__main__":

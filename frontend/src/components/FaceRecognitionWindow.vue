@@ -19,7 +19,7 @@
           </div>
           <button
             @click="takeSnapshot"
-            class="w-24 h-24 border-[3px] border-red-600 rounded-full mt-4 bg-neutral-400"
+            class="w-24 h-24 border-[3px] border-red-600 rounded-full mt-4"
           ></button>
           <p class="text-4xl text-white">{{ serverResponse }}</p>
         </div>

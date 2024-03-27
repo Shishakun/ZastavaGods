@@ -46,7 +46,7 @@
         <div>Всего л/c: 5432</div>
         <div
           @click="isModalOpen = true"
-          class="text-activeText hover:bg-buttonHover shadow-md items-center flex gap-2 dark:bg-green-700 border-[1px] border-outputBorder font-roboto cursor-pointer font-medium px-4 py-2 rounded-md duration-500 dark:hover:bg-green-800"
+          class="text-neutral-100 dark:hover:bg-green-800 shadow-md items-center flex gap-2 dark:bg-green-700 bg-green-500 border-[1px] border-outputBorder font-roboto cursor-pointer font-medium px-4 py-2 rounded-md duration-300 hover:bg-green-400"
         >
           Загрузить персонал
         </div>

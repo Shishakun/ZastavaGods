@@ -58,5 +58,19 @@ async def upload_image(image_data: ImageRequest):
         )
 
 
+class User(BaseModel):
+    surname: str
+    name: str
+    patronymic: str
+    otdel: str
+    secret: int
+
+
+@app.post("/uploadPeople")
+async def create_user(user: User):
+    # Делайте что-то с полученными данными
+    return {"message": "Данные успешно получены и обработаны"}
+
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8080)

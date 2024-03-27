@@ -14,12 +14,12 @@
       <div class="flex justify-center pt-8">
         <p class="text-3xl font-bold">Добавить персонал</p>
       </div>
-      <div class="w-full pt-8">
-        <div class="flex flex-col gap-2 px-16 justify-center">
+      <div class="w-full pt-12">
+        <form action="" class="flex flex-col gap-2 px-16 justify-center">
           <div class="flex items-center justify-between w-full gap-2">
             <p class="text-neutral-700 w-3/12 font-semibold">Фамилия:</p>
             <input
-              v-model="keyword"
+              v-model="surname"
               class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm border-[1px] border-neutral-300 shadow-sm"
               placeholder="Например: Иванов"
             />
@@ -27,7 +27,7 @@
           <div class="flex items-center justify-between w-full gap-2">
             <p class="text-neutral-700 w-3/12 font-semibold">Имя:</p>
             <input
-              v-model="keyword"
+              v-model="name"
               class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm border-[1px] border-neutral-300 shadow-sm"
               placeholder="Например: Дмитрий"
             />
@@ -35,7 +35,7 @@
           <div class="flex items-center justify-between w-full gap-2">
             <p class="text-neutral-700 w-3/12 font-semibold">Отчество:</p>
             <input
-              v-model="keyword"
+              v-model="patronymic"
               class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm border-[1px] border-neutral-300 shadow-sm"
               placeholder="Например: Артемьевич"
             />
@@ -43,7 +43,7 @@
           <div class="flex items-center justify-between w-full gap-2">
             <p class="text-neutral-700 w-3/12 font-semibold">Отдел:</p>
             <select
-              v-model="selectedOtdel"
+              v-model="otdel"
               class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm border-[1px] border-neutral-300 shadow-sm"
             >
               <option>1 отдел</option>
@@ -56,7 +56,7 @@
               Уровень допуска:
             </p>
             <select
-              v-model="selectedSecret"
+              v-model="secret"
               class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm border-[1px] border-neutral-300 shadow-sm"
             >
               <option>1</option>
@@ -67,11 +67,19 @@
           <div class="flex items-center justify-between w-full gap-2">
             <p class="text-neutral-700 w-3/12 font-semibold">Фото:</p>
             <input
-              class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm border-[1px] border-neutral-300 shadow-sm"
+              class="rounded-md w-9/12 h-8 placeholder:text-sm file:rounded-xl file:w-[10vw] file:border-2 file:border-neutral-500 file:shadow-md file:mr-4"
               type="file"
+              accept="image/png, image/jpeg"
             />
           </div>
-        </div>
+          <div class="flex items-center justify-end w-full gap-2">
+            <button
+              class="bg-green-600 shadow-md hover:bg-green-700 duration-300 hover:shadow-xl rounded-md px-4 py-2 text-neutral-200"
+            >
+              Сохранить
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -92,20 +100,15 @@ export default {
     this.$el.focus();
   },
   emits: ["close"],
-  props: {
-    uav_img: String,
-    uav_name: String,
-    uav_country: String,
-    uav_company: String,
-    uav_endurance: Number,
-    uav_range: Number,
-    uav_payload: Number,
-    uav_max_speed: Number,
-    uav_platform: String,
-    uav_altitude: String,
-    uav_mass: Number,
-    uav_width: Number,
-    uav_length: Number,
-  },
+  // data() {
+  //   return {
+  //     secret: "1",
+  //     surname: surname,
+  //     name: name,
+  //     patronymic: patronymic,
+  //     otdel: otdel,
+  //     secret: secret,
+  //   };
+  // },
 };
 </script>

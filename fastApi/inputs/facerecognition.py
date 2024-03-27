@@ -70,8 +70,8 @@ class FaceRecognition:
                     )
 
                     # Initialize name and confidence
-                    name = "unknown"
-                    confidence = "unknown"
+                    name = "Неизвестное лицо"
+                    confidence = "Неизвестное лицо"
 
                     # Find matches
                     face_distances = face_recognition.face_distance(

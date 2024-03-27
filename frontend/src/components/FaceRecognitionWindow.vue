@@ -77,7 +77,12 @@ export default {
       });
 
       const data = await response.json();
-      this.serverResponse = data.message;
+      const message = data.message;
+      const firstDotIndex = message.indexOf(".");
+      const result =
+        firstDotIndex !== -1 ? message.substring(0, firstDotIndex) : message;
+
+      this.serverResponse = result;
     },
   },
   async mounted() {

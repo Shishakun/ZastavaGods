@@ -1,5 +1,6 @@
 <template>
   <div class="flex w-full justify-center p-6 gap-4 duration-500">
+    <ModalWindow v-if="isModalOpen" @close="isModalOpen = false" />
     <div class="fixed w-64 left-6">
       <SidebarMain />
     </div>
@@ -17,15 +18,7 @@
         <div class="flex">
           <div
             class="relative mb-4 flex w-full duration-500 flex-wrap items-stretch gap-2 justify-center text-activeText"
-          >
-            <input
-              type="search"
-              class="relative shadow-md m-0 block min-w-0 flex-auto rounded border border-solid border-inputBorder bg-transparent bg-clip-padding px-3 py-[0.25rem] text-base font-normal leading-[1.6] text-activeText outline-none transition duration-500 ease-in-out focus:z-[3] focus:border-primary focus:text-activeText focus:shadow-[inset_0_0_0_1px_rgb(59,113,202)] focus:outline-none placeholder:text-activeText focus:border-primary"
-              placeholder="Поиск"
-              aria-label="Search"
-              aria-describedby="button-addon2"
-            />
-          </div>
+          ></div>
         </div>
       </div>
       <div class="w-5/6 flex justify-start items-center gap-4">
@@ -52,6 +45,7 @@
       >
         <div>Всего л/c: 5432</div>
         <div
+          @click="isModalOpen = true"
           class="text-activeText hover:bg-buttonHover shadow-md items-center flex gap-2 dark:bg-green-700 border-[1px] border-outputBorder font-roboto cursor-pointer font-medium px-4 py-2 rounded-md duration-500 dark:hover:bg-green-800"
         >
           Загрузить персонал
@@ -112,12 +106,14 @@ import TextOutput from "./TextOutput.vue";
 import SmallLoader from "./SmallLoader.vue";
 import BaseIcon from "./BaseIcon.vue";
 import SidebarMain from "./SidebarMain.vue";
+import ModalWindow from "./ModalWindow.vue";
 import axios from "axios";
 export default {
   components: {
     TextOutput,
     SmallLoader,
     BaseIcon,
+    ModalWindow,
     SidebarMain,
   },
   computed: {
@@ -125,6 +121,7 @@ export default {
       return this.files;
     },
   },
+  emits: ["close"],
   data() {
     return {
       filters: [
@@ -146,6 +143,7 @@ export default {
       files: [],
       isLoading: false,
       isReady: false,
+      isModalOpen: false,
     };
   },
   methods: {

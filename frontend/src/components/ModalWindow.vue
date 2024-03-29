@@ -15,11 +15,14 @@
         <p class="text-3xl font-bold">Добавить персонал</p>
       </div>
       <div class="w-full pt-12">
-        <form action="" class="flex flex-col gap-2 px-16 justify-center">
+        <form
+          class="flex flex-col gap-2 px-16 justify-center"
+          @submit.prevent="submitPersonData"
+        >
           <div class="flex items-center justify-between w-full gap-2">
             <p class="text-neutral-700 w-3/12 font-semibold">Фамилия:</p>
             <input
-              v-model="surname"
+              v-model="this.surname"
               class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm border-[1px] border-neutral-300 shadow-sm"
               placeholder="Например: Иванов"
             />
@@ -27,7 +30,7 @@
           <div class="flex items-center justify-between w-full gap-2">
             <p class="text-neutral-700 w-3/12 font-semibold">Имя:</p>
             <input
-              v-model="name"
+              v-model="this.name"
               class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm border-[1px] border-neutral-300 shadow-sm"
               placeholder="Например: Дмитрий"
             />
@@ -35,7 +38,7 @@
           <div class="flex items-center justify-between w-full gap-2">
             <p class="text-neutral-700 w-3/12 font-semibold">Отчество:</p>
             <input
-              v-model="patronymic"
+              v-model="this.patronymic"
               class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm border-[1px] border-neutral-300 shadow-sm"
               placeholder="Например: Артемьевич"
             />
@@ -43,7 +46,7 @@
           <div class="flex items-center justify-between w-full gap-2">
             <p class="text-neutral-700 w-3/12 font-semibold">Отдел:</p>
             <select
-              v-model="otdel"
+              v-model="this.otdel"
               class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm border-[1px] border-neutral-300 shadow-sm"
             >
               <option>1 отдел</option>
@@ -56,7 +59,7 @@
               Уровень допуска:
             </p>
             <select
-              v-model="secret"
+              v-model="this.secret"
               class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm border-[1px] border-neutral-300 shadow-sm"
             >
               <option>1</option>
@@ -67,13 +70,16 @@
           <div class="flex items-center justify-between w-full gap-2">
             <p class="text-neutral-700 w-3/12 font-semibold">Фото:</p>
             <input
-              class="rounded-md w-9/12 h-8 placeholder:text-sm file:rounded-xl file:w-[10vw] file:border-2 file:border-neutral-500 file:shadow-md file:mr-4"
+              class="rounded-md w-9/12 h-8 pl-2.5 placeholder:text-sm file:rounded-xl file:w-[10vw] file:border-2 file:border-neutral-500 file:shadow-md file:mr-4"
               type="file"
               accept="image/png, image/jpeg"
+              ref="fileInput"
+              @change="updateFileInput"
             />
           </div>
           <div class="flex items-center justify-end w-full gap-2">
             <button
+              @click.prevent="submitPersonData"
               class="bg-green-600 shadow-md hover:bg-green-700 duration-300 hover:shadow-xl rounded-md px-4 py-2 text-neutral-200"
             >
               Сохранить
@@ -86,7 +92,7 @@
 </template>
 <script>
 import ModalWindowButtonClose from "./ModalWindowButtonClose.vue";
-
+import axios from "axios";
 export default {
   components: {
     ModalWindowButtonClose,
@@ -95,20 +101,42 @@ export default {
     close() {
       this.$emit("close");
     },
+    updateFileInput() {
+      this.file = this.$refs.fileInput.files[0];
+    },
+    async submitPersonData() {
+      const formData = new FormData();
+      formData.append("surname", this.surname);
+      formData.append("name", this.name);
+      formData.append("patronymic", this.patronymic);
+      formData.append("otdel", this.otdel);
+      formData.append("secret", this.secret);
+      formData.append("file", this.file);
+
+      try {
+        const response = await axios.post(
+          "http://localhost:8000/uploadPeople",
+          formData
+        );
+        console.log(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    },
   },
   mounted() {
     this.$el.focus();
   },
   emits: ["close"],
-  // data() {
-  //   return {
-  //     secret: "1",
-  //     surname: surname,
-  //     name: name,
-  //     patronymic: patronymic,
-  //     otdel: otdel,
-  //     secret: secret,
-  //   };
-  // },
+  data() {
+    return {
+      surname: "",
+      name: "",
+      patronymic: "",
+      otdel: "",
+      secret: "",
+      file: "",
+    };
+  },
 };
 </script>

@@ -1,7 +1,9 @@
 <template>
-  <span :class="[isDarkMode ? 'loader-dark' : 'loader-light']"></span>
   <div>
-    <AnimatedText />
+    <span :class="[isDarkMode ? 'loader-dark' : 'loader-light']"></span>
+    <div>
+      <AnimatedText />
+    </div>
   </div>
 </template>
 <script>

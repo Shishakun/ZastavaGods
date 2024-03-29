@@ -17,7 +17,9 @@
               autoplay
             ></video>
           </div>
+          <Loader v-if="isLoading" />
           <button
+            v-else
             @click="takeSnapshot"
             class="w-24 h-24 border-[3px] border-red-600 rounded-full mt-4"
           ></button>
@@ -26,11 +28,14 @@
         <div
           class="flex flex-col border-[1px] justify-between border-activeText w-[35vw] h-[83vh] rounded-xl"
         >
-          <img src="../img/translator.jpg" class="rounded-t-xl h-[68vh]" />
+          <img
+            :src="ImageSrc"
+            class="rounded-t-xl h-[68vh]"
+          />
           <div class="text-activeText px-4 py-6 text-xl">
-            <p>ФИО: Шишкарев Захар Андреевич</p>
-            <p>Отдел: 2 ЦС КГГ</p>
-            <p>Уровень допуска: 2</p>
+            <p>ФИО: {{ surname }} {{ name }} {{ patronymic }}</p>
+            <p>Отдел: {{ otdel }}</p>
+            <p>Уровень допуска: {{ secret }}</p>
           </div>
         </div>
       </div>
@@ -44,16 +49,26 @@ import TextOutput from "./TextOutput.vue";
 import TranslaterLoader from "./TranslaterLoader.vue";
 import SidebarMain from "./SidebarMain.vue";
 import Alert from "./Alert.vue";
+import Loader from "./Loader.vue";
 export default {
   components: {
     TextOutput,
     SidebarMain,
     TranslaterLoader,
     Alert,
+    Loader,
   },
   data() {
     return {
       serverResponse: "",
+      isLoading: false,
+      isReady: false,
+      name: "",
+      surname: "",
+      patronymic: "",
+      otdel: "",
+      secret: "",
+      photo_path: "",
     };
   },
   methods: {
@@ -75,14 +90,29 @@ export default {
         },
         body: JSON.stringify({ image }),
       });
-
-      const data = await response.json();
-      const message = data.message;
-      const firstDotIndex = message.indexOf(".");
-      const result =
-        firstDotIndex !== -1 ? message.substring(0, firstDotIndex) : message;
-
-      this.serverResponse = result;
+      if (response.ok) {
+        const data = await response.json();
+        if (data) {
+          // Handle the user data
+          this.surname = data.message.surname;
+          this.name = data.message.name;
+          this.patronymic = data.message.patronymic;
+          this.otdel = data.message.otdel;
+          this.secret = data.message.secret;
+        } else if (data.message === "No user found.") {
+          // Handle the case where the user is not found
+          console.log("No user found.");
+          this.isReady = false;
+        } else if (data.message === "No face detected.") {
+          // Handle the case where no face is detected in the image
+          console.log("No face detected.");
+          this.isReady = false;
+        }
+      } else {
+        const error = await response.json();
+        console.log(error.message);
+        this.isReady = false;
+      }
     },
   },
   async mounted() {

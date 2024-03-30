@@ -12,6 +12,7 @@ from loguru import logger
 from inputs.yamnetrec import process_audio
 from pydantic import BaseModel
 from inputs.facerecognition import *
+from fastapi.staticfiles import StaticFiles
 
 face_recognition = FaceRecognition()
 app = FastAPI()
@@ -25,6 +26,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/inputs/people", StaticFiles(directory="inputs/people"), name="people")
 
 
 class ImageRequest(BaseModel):
@@ -50,9 +53,7 @@ async def upload_image(image_data: ImageRequest):
         face = face_recognition.run_recognition(img_array)
         path_acc = Path.cwd().joinpath("inputs").joinpath("people").joinpath(face)
         for image in path_acc.iterdir():
-            image_path_acc = (
-                "inputs" + "\\" + "people" + "\\" + face + "\\" + image.name
-            )
+            image_path_acc = "\\" + face + "\\" + image.name
         logger.debug(image_path_acc)
         conn = psycopg2.connect(
             host="localhost",
@@ -77,6 +78,7 @@ async def upload_image(image_data: ImageRequest):
             patronymic = user_data[3]
             otdel = user_data[4]
             secret = user_data[5]
+            image_path = user_data[6]
             response_data = {
                 "message": {
                     "surname": surname,
@@ -84,6 +86,7 @@ async def upload_image(image_data: ImageRequest):
                     "patronymic": patronymic,
                     "otdel": otdel,
                     "secret": secret,
+                    "image_path": image_path,
                 }
             }
             return JSONResponse(content=response_data, status_code=200)
@@ -119,7 +122,8 @@ async def submit_person_data(
             if not chunk:
                 break
             f.write(chunk)
-
+    foto_path = f"\{surname}_{name}_{patronymic}\{file.filename}"
+    logger.debug(foto_path)
     # Сохранение данных в PostgreSQL с использованием psycopg2
     conn = psycopg2.connect("dbname=Zastava user=postgres password=59uranuv")
     logger.debug(f"Connected to database!")
@@ -139,7 +143,7 @@ async def submit_person_data(
     )
     cur.execute(
         "INSERT INTO people (surname, name, patronymic, otdel, secret, photo_path) VALUES (%s, %s, %s, %s, %s, %s)",
-        (surname, name, patronymic, otdel, secret, file_path),
+        (surname, name, patronymic, otdel, secret, foto_path),
     )
     cur.execute("SELECT  *  FROM people")
     rows = cur.fetchall()

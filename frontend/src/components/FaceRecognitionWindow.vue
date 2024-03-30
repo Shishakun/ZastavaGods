@@ -28,10 +28,7 @@
         <div
           class="flex flex-col border-[1px] justify-between border-activeText w-[35vw] h-[83vh] rounded-xl"
         >
-          <img
-            :src="ImageSrc"
-            class="rounded-t-xl h-[68vh]"
-          />
+          <img :src="getImage" class="rounded-t-xl h-[68vh]" />
           <div class="text-activeText px-4 py-6 text-xl">
             <p>ФИО: {{ surname }} {{ name }} {{ patronymic }}</p>
             <p>Отдел: {{ otdel }}</p>
@@ -99,6 +96,7 @@ export default {
           this.patronymic = data.message.patronymic;
           this.otdel = data.message.otdel;
           this.secret = data.message.secret;
+          this.photo_path = data.message.image_path;
         } else if (data.message === "No user found.") {
           // Handle the case where the user is not found
           console.log("No user found.");
@@ -122,6 +120,11 @@ export default {
     const video = this.$refs.video;
     video.srcObject = stream;
     video.play();
+  },
+  computed: {
+    getImage() {
+      return `http://localhost:8000/inputs/people/${this.photo_path}`;
+    },
   },
 };
 </script>

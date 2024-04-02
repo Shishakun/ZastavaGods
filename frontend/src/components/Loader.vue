@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="pt-4">
     <span class="loader"></span>
   </div>
 </template>
 <style scoped>
 .loader {
-  width: 48px;
-  height: 48px;
+  width: 96px;
+  height: 96px;
   border: 3px solid #fff;
   border-radius: 50%;
   display: inline-block;
@@ -21,8 +21,8 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   border: 3px solid;
   border-color: #ff3d00 transparent;

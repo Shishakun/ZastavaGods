@@ -3,8 +3,18 @@
     <div class="fixed w-64 left-6">
       <SidebarMain />
     </div>
+    <transition
+      enter-active-class="transition ease-in-out duration-500 transform"
+      enter-from-class="translate-x-full"
+      enter-to-class="translate-x-0"
+      leave-active-class="transition ease-in-out duration-500 transform"
+      leave-from-class="translate-x-0"
+      leave-to-class="translate-x-full"
+    >
+      <Alert v-if="isError" @close="isError = false" />
+    </transition>
     <div
-      class="duration-500 min-h-[90vh] justify-center ml-72 items-center w-full bg-frameBackground rounded-xl outline-dashed outline-[1px] outline-outlineColor"
+      class="duration-500 min-h-[93vh] justify-center ml-72 items-center w-full bg-frameBackground rounded-xl outline-dashed outline-[1px] outline-outlineColor"
     >
       <div class="flex justify-between px-16 pt-6">
         <div class="flex flex-col items-center">
@@ -21,12 +31,15 @@
           <button
             v-else
             @click="takeSnapshot"
-            class="w-24 h-24 border-[3px] border-red-600 rounded-full mt-4"
+            :class="[
+              isReady ? 'bg-green-600' : 'bg-red-600',
+              'w-24 h-24 border-[3px] border-gray-400 rounded-full mt-4',
+            ]"
           ></button>
           <p class="text-4xl text-white">{{ serverResponse }}</p>
         </div>
         <div
-          class="flex flex-col border-[1px] justify-between border-activeText w-[35vw] h-[83vh] rounded-xl"
+          class="flex flex-col border-[1px] justify-between border-activeText w-[35vw] min-h-[83vh] rounded-xl"
         >
           <img :src="getImage" class="rounded-t-xl h-[68vh]" />
           <div class="text-activeText px-4 py-6 text-xl">
@@ -59,6 +72,7 @@ export default {
     return {
       serverResponse: "",
       isLoading: false,
+      isError: false,
       isReady: false,
       name: "",
       surname: "",
@@ -79,7 +93,7 @@ export default {
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       const image = canvas.toDataURL("image/png");
-
+      this.isLoading = true;
       const response = await fetch("http://localhost:8000/facerecognition", {
         method: "POST",
         headers: {
@@ -87,8 +101,11 @@ export default {
         },
         body: JSON.stringify({ image }),
       });
+
       if (response.ok) {
         const data = await response.json();
+        this.isLoading = false;
+        this.isReady = true;
         if (data) {
           // Handle the user data
           this.surname = data.message.surname;
@@ -96,20 +113,26 @@ export default {
           this.patronymic = data.message.patronymic;
           this.otdel = data.message.otdel;
           this.secret = data.message.secret;
+          this.isLoading = false;
           this.photo_path = data.message.image_path;
-        } else if (data.message === "No user found.") {
-          // Handle the case where the user is not found
-          console.log("No user found.");
-          this.isReady = false;
-        } else if (data.message === "No face detected.") {
-          // Handle the case where no face is detected in the image
-          console.log("No face detected.");
-          this.isReady = false;
+          setTimeout(() => {
+            this.surname = "";
+            this.name = "";
+            this.patronymic = "";
+            this.otdel = "";
+            this.secret = "";
+            this.photo_path = "";
+            this.isReady = false;
+          }, 5000);
         }
       } else {
         const error = await response.json();
         console.log(error.message);
-        this.isReady = false;
+        this.isLoading = false;
+        this.isError = true;
+        setTimeout(() => {
+          this.isError = false;
+        }, 2000);
       }
     },
   },

@@ -12,7 +12,7 @@
         />
       </div>
       <p class="font-bold text-xl">Ошибка</p>
-      <p class="text-lg">Проверьте подключение к сети.</p>
+      <p class="text-lg pt-1 leading-tight">Не найдено лицо или человек отстутсвует в базе персонала</p>
     </div>
   </div>
 </template>

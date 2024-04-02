@@ -3,6 +3,7 @@ import base64
 import io
 import numpy as np
 import psycopg2
+import pyaudio
 from PIL import Image
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,6 +39,28 @@ class ImageRequest(BaseModel):
 async def get_yamnet_result():
     result = process_audio()
     return {"result": result}
+
+
+@app.get("/yamnetgraph")
+async def get_graph():
+    CHUNK = 1024
+    FORMAT = pyaudio.paInt16
+    CHANNELS = 1
+    RATE = 44100
+
+    p = pyaudio.PyAudio()
+
+    stream = p.open(
+        format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK
+    )
+
+    while True:
+        data = np.frombuffer(stream.read(CHUNK), dtype=np.int16)
+        # Здесь обработайте аудиоданные и анализируйте их частоту
+
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
 
 
 @app.post("/facerecognition")
@@ -90,7 +113,6 @@ async def upload_image(image_data: ImageRequest):
                 }
             }
             return JSONResponse(content=response_data, status_code=200)
-
     except Exception as e:
         logger.error(str(e))
         return JSONResponse(

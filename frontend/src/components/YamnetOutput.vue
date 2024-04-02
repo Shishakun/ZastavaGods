@@ -40,13 +40,6 @@ export default {
       ],
     };
   },
-  mounted() {
-    this.fetchYamnetResult();
-    this.interval = setInterval(this.fetchYamnetResult, 2000);
-  },
-  beforeDestroy() {
-    clearInterval(this.interval);
-  },
   methods: {
     async fetchYamnetResult() {
       if (this.startYamnet) {
@@ -71,6 +64,13 @@ export default {
     },
     toggleYamnet() {
       this.startYamnet = !this.startYamnet;
+      if (!this.startYamnet) {
+        this.yamnetResult = null; // очищаем результат, чтобы не отображать устаревшие данные
+        clearInterval(this.interval); // останавливаем интервал обновления данных
+      } else {
+        this.fetchYamnetResult(); // если startYamnet стало true, сразу запрашиваем данные
+        this.interval = setInterval(this.fetchYamnetResult, 2000); // запускаем интервал обновления данных
+      }
     },
     isRedBackground() {
       if (this.yamnetResult) {

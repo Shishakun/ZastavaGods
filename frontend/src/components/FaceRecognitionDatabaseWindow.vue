@@ -47,7 +47,7 @@
       </div>
       <div
         class="flex justify-between items-center text-neutral-400 pt-12 w-11/12"
-        >
+      >
         <div>Всего л/c: {{ filteredPeople.length }}</div>
         <div
           @click="isModalOpen = true"
@@ -135,15 +135,13 @@ export default {
       filters: [
         {
           id: 1,
-          name: "По дате загрузки",
+          name: "По фамилии А → Я",
+          sortingFunction: (a, b) => a.surname.localeCompare(b.surname),
         },
         {
           id: 2,
-          name: "По фамилии А → Я",
-        },
-        {
-          id: 3,
           name: "По фамилии Я → A",
+          sortingFunction: (a, b) => b.surname.localeCompare(a.surname),
         },
       ],
       filterIsOpen: false,
@@ -179,16 +177,21 @@ export default {
   },
   computed: {
     filteredPeople() {
-      // Если запрос пустой, возвращаем весь список
-      if (!this.searchQuery.trim()) {
-        return this.people;
+      let filtered = this.people;
+      if (this.searchQuery.trim()) {
+        filtered = filtered.filter((person) =>
+          person.surname
+            .toLowerCase()
+            .includes(this.searchQuery.trim().toLowerCase())
+        );
       }
-      // Иначе фильтруем список по фамилии
-      return this.people.filter((person) =>
-        person.surname
-          .toLowerCase()
-          .includes(this.searchQuery.trim().toLowerCase())
-      );
+      if (this.selectedFilter !== null) {
+        const filter = this.filters.find(
+          (item) => item.id === this.selectedFilter
+        );
+        filtered = filtered.slice().sort(filter.sortingFunction);
+      }
+      return filtered;
     },
   },
 };

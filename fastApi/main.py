@@ -63,6 +63,47 @@ async def get_graph():
     p.terminate()
 
 
+@app.get("/getperson")
+async def get_person():
+    try:
+        conn = psycopg2.connect(
+            host="localhost",
+            database="Zastava",
+            user="postgres",
+            password="59uranuv",
+        )
+        # Создание курсора для выполнения SQL-запросов
+        cursor = conn.cursor()
+
+        # Выполнение SQL-запроса для получения информации о пользователе по пути
+        cursor.execute(f"SELECT * FROM people")
+        people = []
+        for row in cursor.fetchall():
+            people.append(
+                {
+                    "id": row[0],
+                    "surname": row[1],
+                    "name": row[2],
+                    "patronymic": row[3],
+                    "otdel": row[4],
+                    "secret": row[5],
+                    "image_path": row[6],
+                }
+            )
+        # Закрытие курсора и соединения с базой данных
+        logger.debug(people)
+        cursor.close()
+        conn.close()
+        return {"people": people, "total_count": len(people)}
+
+    except Exception as e:
+        logger.error(str(e))
+        return JSONResponse(
+            content={"message": "An error occurred during face recognition"},
+            status_code=500,
+        )
+
+
 @app.post("/facerecognition")
 async def upload_image(image_data: ImageRequest):
     try:

@@ -56,60 +56,62 @@
           Загрузить персонал
         </div>
       </div>
-      <div class="w-11/12 mb-10 grid grid-cols-2 gap-4">
+      <transition
+        enter-active-class="ease-out duration-150 "
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="ease-in duration-0"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
         <div
-          class="flex justify-center pt-8"
-          v-for="person in filteredPeople"
-          :key="person.id"
+          v-if="filteredPeople.length > 0"
+          class="flex justify-center pt-8 w-11/12"
+          :key="filteredPeople"
         >
-          <transition
-            enter-active-class="transition ease-in-out duration-500 transform"
-            enter-from-class="-translate-y-[50px]"
-            enter-to-class="translate-y-0"
-            leave-active-class="transition ease-in-out duration-500 transform"
-            leave-from-class="translate-y-0"
-            leave-to-class="translate-y-[50px]"
-          >
-            <div
-              class="border-2 shadow-md border-neutral-200 w-full rounded-xl p-2.5"
-            >
-              <div class="flex justify-between">
-                <div class="flex">
-                  <img
-                    :src="getImage(person.image_path)"
-                    class="h-40 w-32 rounded-xl"
-                  />
-                  <div class="flex flex-col justify-between px-4">
-                    <div>
+          <div class="w-full mb-10 grid grid-cols-2 gap-4">
+            <div v-for="person in filteredPeople" :key="person.id">
+              <div
+                class="border-2 shadow-md border-neutral-200 w-full rounded-xl p-2.5"
+              >
+                <div class="flex justify-between">
+                  <div class="flex">
+                    <img
+                      :src="getImage(person.image_path)"
+                      class="h-40 w-32 rounded-xl"
+                    />
+                    <div class="flex flex-col justify-between px-4">
+                      <div>
+                        <p
+                          class="text-activeText text-lg hover:underline duration-500 cursor-pointer flex"
+                        >
+                          ФИО: {{ person.surname }} {{ person.name }}
+                          {{ person.patronymic }}
+                        </p>
+                        <p
+                          class="text-activeText text-lg hover:underline duration-500 cursor-pointer flex"
+                        >
+                          Отдел: {{ person.otdel }}
+                        </p>
+                      </div>
                       <p
                         class="text-activeText text-lg hover:underline duration-500 cursor-pointer flex"
                       >
-                        ФИО: {{ person.surname }} {{ person.name }}
-                        {{ person.patronymic }}
-                      </p>
-                      <p
-                        class="text-activeText text-lg hover:underline duration-500 cursor-pointer flex"
-                      >
-                        Отдел: {{ person.otdel }}
+                        Уровень допуска: {{ person.secret }}
                       </p>
                     </div>
-                    <p
-                      class="text-activeText text-lg hover:underline duration-500 cursor-pointer flex"
-                    >
-                      Уровень допуска: {{ person.secret }}
-                    </p>
                   </div>
+                  <BaseIcon
+                    @click="deleteDocs(i)"
+                    name="x"
+                    class="w-5 h-5 text-activeText cursor-pointer hover:text-red-600 duration-500"
+                  />
                 </div>
-                <BaseIcon
-                  @click="deleteDocs(i)"
-                  name="x"
-                  class="w-5 h-5 text-activeText cursor-pointer hover:text-red-600 duration-500"
-                />
               </div>
             </div>
-          </transition>
+          </div>
         </div>
-      </div>
+      </transition>
     </div>
   </div>
 </template>

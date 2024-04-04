@@ -7,7 +7,7 @@ import pyaudio
 from PIL import Image
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, Form, File, UploadFile
+from fastapi import FastAPI, Form, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from loguru import logger
 from inputs.yamnetrec import process_audio
@@ -102,6 +102,41 @@ async def get_person():
             content={"message": "An error occurred during face recognition"},
             status_code=500,
         )
+
+
+@app.delete("/deleteperson/{person_id}")
+async def delete_person(person_id: int):
+    try:
+        conn = psycopg2.connect(
+            host="localhost",
+            database="Zastava",
+            user="postgres",
+            password="59uranuv",
+        )
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM people WHERE id = %s", (person_id,))
+        person_data = cursor.fetchone()
+        if not person_data:
+            raise HTTPException(status_code=404, detail="Person not found")
+        surname, name, patronymic = person_data[1], person_data[2], person_data[3]
+        people_dir = f"inputs/people/{surname}_{name}_{patronymic}"
+        cursor.execute("DELETE FROM people WHERE id = %s", (person_id,))
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Person not found")
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        # Удаление папки и файлов, связанных с персоной
+        if os.path.exists(people_dir):
+            for file_name in os.listdir(people_dir):
+                file_path = os.path.join(people_dir, file_name)
+                os.remove(file_path)
+            os.rmdir(people_dir)
+
+        return {"message": "Person deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/facerecognition")

@@ -1,6 +1,10 @@
 <template>
   <div class="flex w-full justify-center p-6 gap-4 duration-500">
-    <ModalWindow v-if="isModalOpen" @close="isModalOpen = false" />
+    <ModalWindow
+      v-if="isModalOpen"
+      @close="isModalOpen = false"
+      @update-people-list="fetchPeople"
+    />
     <div class="fixed w-64 left-6">
       <SidebarMain />
     </div>
@@ -48,7 +52,9 @@
       <div
         class="flex justify-between items-center text-neutral-400 pt-12 w-11/12"
       >
-        <div>Всего л/c: {{ filteredPeople.length }}</div>
+        <div>
+          <div>Всего л/c: {{ totalCount }}</div>
+        </div>
         <div
           @click="isModalOpen = true"
           class="text-neutral-100 dark:hover:bg-green-800 shadow-md items-center flex gap-2 dark:bg-green-700 bg-green-500 border-[1px] border-outputBorder font-roboto cursor-pointer font-medium px-4 py-2 rounded-md duration-300 hover:bg-green-400"
@@ -102,7 +108,7 @@
                     </div>
                   </div>
                   <BaseIcon
-                    @click="deleteDocs(i)"
+                    @click="deletePerson(person.id)"
                     name="x"
                     class="w-5 h-5 text-activeText cursor-pointer hover:text-red-600 duration-500"
                   />
@@ -112,6 +118,58 @@
           </div>
         </div>
       </transition>
+      <div class="flex justify-center w-full mb-2">
+        <nav aria-label="Page navigation example">
+          <ul class="list-style-none flex">
+            <li>
+              <button
+                :class="{
+                  'relative block rounded px-3 py-1.5 text-sm text-surface transition duration-300 hover:bg-neutral-100 focus:outline-none dark:text-neutral-400 dark:hover:bg-neutral-700': true,
+                  'bg-transparent opacity-50 cursor-not-allowed':
+                    currentPage === 1,
+                }"
+                @click="goToPreviousPage"
+                :disabled="currentPage === 1"
+              >
+                Предыдущая
+              </button>
+            </li>
+            <li
+              v-for="page in limitedPages"
+              :key="page"
+              :aria-current="currentPage === page ? 'page' : null"
+            >
+              <button
+                :class="{
+                  'dark:bg-neutral-700 bg-neutral-300': currentPage === page,
+                  'dark:hover:bg-neutral-800 hover:bg-neutral-200':
+                    currentPage !== page,
+                }"
+                class="relative block rounded px-3 py-1.5 text-sm text-surface transition duration-300 dark:text-neutral-50"
+                @click="
+                  goToPage(page);
+                  scrollToTop();
+                "
+              >
+                {{ page }}
+              </button>
+            </li>
+            <li>
+              <button
+                :class="{
+                  'relative block rounded px-3 py-1.5 text-sm text-surface transition duration-300 hover:bg-neutral-100 focus:outline-none dark:text-neutral-400 dark:hover:bg-neutral-700': true,
+                  'bg-transparent opacity-50 cursor-not-allowed':
+                    currentPage === totalPages,
+                }"
+                @click="goToNextPage"
+                :disabled="currentPage === totalPages"
+              >
+                Следующая
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
   </div>
 </template>
@@ -153,6 +211,9 @@ export default {
       isReady: false,
       isModalOpen: false,
       searchQuery: "",
+      currentPage: 1,
+      pageSize: 10,
+      totalCount: 0,
     };
   },
   methods: {
@@ -170,8 +231,45 @@ export default {
         console.error("Error fetching data:", error);
       }
     },
+    scrollToTop() {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    },
+    async deletePerson(personId) {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/deleteperson/${personId}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to delete person");
+        }
+        // Удаление персоны из списка
+        this.people = this.people.filter((person) => person.id !== personId);
+        console.log("Person deleted successfully");
+      } catch (error) {
+        console.error("Error deleting person:", error);
+      }
+    },
     getImage(image_path) {
       return `http://localhost:8000/inputs/people/${image_path}`;
+    },
+    goToPage(page) {
+      this.currentPage = page;
+    },
+    goToPreviousPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+    goToNextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
     },
   },
   mounted() {
@@ -193,7 +291,32 @@ export default {
         );
         filtered = filtered.slice().sort(filter.sortingFunction);
       }
-      return filtered;
+
+      // Разбиваем массив на страницы по 10 элементов
+      const startIndex = (this.currentPage - 1) * this.pageSize;
+      const endIndex = startIndex + this.pageSize;
+      return filtered.slice(startIndex, endIndex);
+    },
+    totalPages() {
+      return Math.ceil(this.totalCount / this.pageSize);
+    },
+    limitedPages() {
+      const totalPages = this.totalPages;
+      const maxVisiblePages = 5;
+      const offset = 2;
+
+      if (totalPages <= maxVisiblePages) {
+        return Array.from({ length: totalPages }, (_, index) => index + 1);
+      }
+
+      const startPage = Math.max(1, this.currentPage - offset);
+      const endPage = Math.min(totalPages, this.currentPage + offset);
+
+      let pages = [];
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+      return pages;
     },
   },
 };

@@ -54,6 +54,7 @@
             <label for="otdel" class="sr-only">Выберите отдел</label>
             <select
               v-model="selectedOtdel"
+              @change="isFiltering = true"
               id="otdel"
               class="border-2 bg-frameBackground hover:bg-buttonHover shadow-md duration-500 text-neutral-600 font-roboto font-medium rounded-xl block px-4 py-2 dark:text-neutral-100"
             >
@@ -67,6 +68,7 @@
             <label for="secret" class="sr-only">Выберите форму</label>
             <select
               v-model="selectedSecret"
+              @change="isFiltering = true"
               id="secret"
               class="border-2 bg-frameBackground hover:bg-buttonHover shadow-md duration-500 text-neutral-600 font-roboto font-medium rounded-xl block px-4 py-2 dark:text-neutral-100"
             >
@@ -250,6 +252,7 @@ export default {
       totalCount: 0,
       selectedOtdel: null,
       selectedSecret: null,
+      isFiltering: false,
     };
   },
   methods: {
@@ -313,6 +316,7 @@ export default {
       this.selectedFilter = null;
       this.searchQuery = "";
       this.currentPage = 1;
+      this.isFiltering = false;
     },
   },
   mounted() {
@@ -351,7 +355,9 @@ export default {
       return filtered.slice(startIndex, endIndex);
     },
     totalPages() {
-      return Math.ceil(this.totalCount / this.pageSize);
+      if (this.isFiltering == false)
+        return Math.ceil(this.totalCount / this.pageSize);
+      else return Math.ceil(this.filteredPeople.length / this.pageSize);
     },
     limitedPages() {
       const totalPages = this.totalPages;

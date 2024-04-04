@@ -325,6 +325,7 @@ export default {
   computed: {
     filteredPeople() {
       let filtered = this.people;
+
       if (this.searchQuery.trim()) {
         filtered = filtered.filter((person) =>
           person.surname
@@ -332,16 +333,19 @@ export default {
             .includes(this.searchQuery.trim().toLowerCase())
         );
       }
+
       if (this.selectedOtdel !== null) {
         filtered = filtered.filter(
           (person) => person.otdel === this.selectedOtdel
         );
       }
+
       if (this.selectedSecret !== null) {
         filtered = filtered.filter(
           (person) => person.secret === this.selectedSecret
         );
       }
+
       if (this.selectedFilter !== null) {
         const filter = this.filters.find(
           (item) => item.id === this.selectedFilter
@@ -349,16 +353,37 @@ export default {
         filtered = filtered.slice().sort(filter.sortingFunction);
       }
 
-      // Разбиваем массив на страницы по 10 элементов
       const startIndex = (this.currentPage - 1) * this.pageSize;
       const endIndex = startIndex + this.pageSize;
       return filtered.slice(startIndex, endIndex);
     },
+
     totalPages() {
-      if (this.isFiltering == false)
-        return Math.ceil(this.totalCount / this.pageSize);
-      else return Math.ceil(this.filteredPeople.length / this.pageSize);
+      let filtered = this.people;
+
+      if (this.searchQuery.trim()) {
+        filtered = filtered.filter((person) =>
+          person.surname
+            .toLowerCase()
+            .includes(this.searchQuery.trim().toLowerCase())
+        );
+      }
+
+      if (this.selectedOtdel !== null) {
+        filtered = filtered.filter(
+          (person) => person.otdel === this.selectedOtdel
+        );
+      }
+
+      if (this.selectedSecret !== null) {
+        filtered = filtered.filter(
+          (person) => person.secret === this.selectedSecret
+        );
+      }
+
+      return Math.ceil(filtered.length / this.pageSize);
     },
+
     limitedPages() {
       const totalPages = this.totalPages;
       const maxVisiblePages = 5;

@@ -31,21 +31,50 @@
         </div>
       </div>
       <div class="w-11/12 flex justify-start items-center gap-4">
-        <p class="text-xl text-activeText duration-500">Сортировка по:</p>
-        <div class="flex justify-center gap-2">
+        <p class="text-xl text-neutral-600 dark:text-neutral-100 duration-500">
+          Сортировка по:
+        </p>
+        <div class="flex justify-center gap-2 items-center">
           <div v-for="(item, index) in filters" :key="index">
             <button
               :class="{
-                'bg-buttonHover text-activeText duration-500':
+                'bg-buttonHover text-neutral-600 dark:text-neutral-100 duration-500':
                   selectedFilter === item.id,
               }"
-              class="text-activeText shadow-md font-roboto font-medium border-2 px-4 py-2 rounded-xl duration-500 hover:bg-buttonHover"
+              class="text-neutral-600 dark:text-neutral-100 shadow-md font-roboto font-medium border-2 px-4 py-2 rounded-xl duration-500 hover:bg-buttonHover"
               @click="
                 selectedFilter = selectedFilter === item.id ? null : item.id
               "
             >
               {{ item.name }}
             </button>
+          </div>
+
+          <div id="dropdown-otdel" class="">
+            <label for="otdel" class="sr-only">Выберите отдел</label>
+            <select
+              v-model="selectedOtdel"
+              id="otdel"
+              class="border-2 bg-frameBackground hover:bg-buttonHover shadow-md duration-500 text-neutral-600 font-roboto font-medium rounded-xl block px-4 py-2 dark:text-neutral-100"
+            >
+              <option selected disabled>Выберите отдел</option>
+              <option v-for="otd in uniqueOtdel" :key="otd">
+                {{ otd }}
+              </option>
+            </select>
+          </div>
+          <div id="dropdown-secret" class="">
+            <label for="secret" class="sr-only">Выберите форму</label>
+            <select
+            v-model="selectedSecret"
+              id="secret"
+              class="border-2 bg-frameBackground hover:bg-buttonHover shadow-md duration-500 text-neutral-600 font-roboto font-medium rounded-xl block px-4 py-2 dark:text-neutral-100"
+            >
+              <option selected disabled>Выберите форму</option>
+              <option v-for="sec in uniqueSecret" :key="sec">
+                {{ sec }}
+              </option>
+            </select>
           </div>
         </div>
       </div>
@@ -212,8 +241,10 @@ export default {
       isModalOpen: false,
       searchQuery: "",
       currentPage: 1,
-      pageSize: 10,
+      pageSize: 6,
       totalCount: 0,
+      selectedOtdel: null,
+      selectedSecret: null,
     };
   },
   methods: {
@@ -285,6 +316,16 @@ export default {
             .includes(this.searchQuery.trim().toLowerCase())
         );
       }
+      if (this.selectedOtdel !== null) {
+        filtered = filtered.filter(
+          (person) => person.otdel === this.selectedOtdel
+        );
+      }
+      if (this.selectedSecret !== null) {
+        filtered = filtered.filter(
+          (person) => person.secret === this.selectedSecret
+        );
+      }
       if (this.selectedFilter !== null) {
         const filter = this.filters.find(
           (item) => item.id === this.selectedFilter
@@ -317,6 +358,14 @@ export default {
         pages.push(i);
       }
       return pages;
+    },
+    uniqueOtdel() {
+      const departments = this.people.map((person) => person.otdel);
+      return [...new Set(departments)];
+    },
+    uniqueSecret() {
+      const Sec = this.people.map((person) => person.secret);
+      return [...new Set(Sec)];
     },
   },
 };

@@ -57,7 +57,7 @@
               id="otdel"
               class="border-2 bg-frameBackground hover:bg-buttonHover shadow-md duration-500 text-neutral-600 font-roboto font-medium rounded-xl block px-4 py-2 dark:text-neutral-100"
             >
-              <option selected disabled>Выберите отдел</option>
+              <option selected>Выберите отдел</option>
               <option v-for="otd in uniqueOtdel" :key="otd">
                 {{ otd }}
               </option>
@@ -66,17 +66,25 @@
           <div id="dropdown-secret" class="">
             <label for="secret" class="sr-only">Выберите форму</label>
             <select
-            v-model="selectedSecret"
+              v-model="selectedSecret"
               id="secret"
               class="border-2 bg-frameBackground hover:bg-buttonHover shadow-md duration-500 text-neutral-600 font-roboto font-medium rounded-xl block px-4 py-2 dark:text-neutral-100"
             >
-              <option selected disabled>Выберите форму</option>
+              <option selected>Выберите форму</option>
               <option v-for="sec in uniqueSecret" :key="sec">
                 {{ sec }}
               </option>
             </select>
           </div>
         </div>
+      </div>
+      <div class="flex justify-end w-11/12 pt-2">
+        <button
+          @click="resetFilters"
+          class="text-sm ml-2 text-neutral-500 hover:text-red-600 focus:outline-none"
+        >
+          Сбросить все фильтры
+        </button>
       </div>
       <div
         class="flex justify-between items-center text-neutral-400 pt-12 w-11/12"
@@ -301,6 +309,13 @@ export default {
       if (this.currentPage < this.totalPages) {
         this.currentPage++;
       }
+    },
+    resetFilters() {
+      this.selectedOtdel = null;
+      this.selectedSecret = null;
+      this.selectedFilter = null;
+      this.searchQuery = "";
+      this.currentPage = 1;
     },
   },
   mounted() {

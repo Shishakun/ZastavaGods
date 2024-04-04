@@ -183,10 +183,7 @@
                     currentPage !== page,
                 }"
                 class="relative block rounded px-3 py-1.5 text-sm text-surface transition duration-300 dark:text-neutral-50"
-                @click="
-                  goToPage(page);
-                  scrollToTop();
-                "
+                @click="goToPage(page)"
               >
                 {{ page }}
               </button>

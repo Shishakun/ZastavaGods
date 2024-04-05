@@ -18,23 +18,10 @@
       </div>
       <div class="flex items-center justify-center gap-4 px-14 pt-4">
         <div
-          class="flex flex-col border-[1px] border-activeText w-1/2 h-[35vh] rounded-xl"
+          class="flex flex-col border-[1px] border-activeText w-full h-full rounded-xl"
         >
           <canvas ref="chartCanvas" class="h-[35vh] rounded-xl p-1"> </canvas>
         </div>
-        <div
-          class="flex flex-col border-[1px] border-activeText w-1/2 h-[35vh] rounded-xl"
-        >
-          <img src="../img/123123.jpg" class="h-[35vh] rounded-xl p-1" />
-        </div>
-      </div>
-      <div class="px-14 text-activeText pt-4 flex items-center">
-        <p>Послушать онлайн:</p>
-        <BaseIcon
-          @click="takeRealTimeAudio"
-          name="play"
-          class="w-6 h-6 mt-2 ml-2"
-        />
       </div>
       <div
         class="flex w-full justify-center px-14 py-4 gap-4 duration-500 min-h-[80vh]"

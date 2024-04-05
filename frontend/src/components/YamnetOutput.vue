@@ -65,7 +65,10 @@ export default {
     toggleYamnet() {
       this.startYamnet = !this.startYamnet;
       if (!this.startYamnet) {
-        this.yamnetResult = null; // очищаем результат, чтобы не отображать устаревшие данные
+        setInterval(() => {
+          this.yamnetResult = null;
+        }, 10000);
+        // очищаем результат, чтобы не отображать устаревшие данные
         clearInterval(this.interval); // останавливаем интервал обновления данных
       } else {
         this.fetchYamnetResult(); // если startYamnet стало true, сразу запрашиваем данные

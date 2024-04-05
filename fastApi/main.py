@@ -31,6 +31,9 @@ app.add_middleware(
 app.mount("/inputs/people", StaticFiles(directory="inputs/people"), name="people")
 
 
+FaceRecognition.encode_faces()
+
+
 class ImageRequest(BaseModel):
     image: str
 
@@ -149,6 +152,7 @@ async def upload_image(image_data: ImageRequest):
         img = Image.open(io.BytesIO(image_bytes))
         img_array = np.array(img)
         face_recognition = FaceRecognition()
+
         face = face_recognition.run_recognition(img_array)
         path_acc = Path.cwd().joinpath("inputs").joinpath("people").joinpath(face)
         for image in path_acc.iterdir():
@@ -247,7 +251,6 @@ async def submit_person_data(
     rows = cur.fetchall()
     logger.debug(rows)
     conn.commit()
-
     return {"message": "Данные успешно получены и обработаны"}
 
 

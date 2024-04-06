@@ -20,13 +20,13 @@ python -m venv venv
 
 cd fastapi
 
-pip install -r req.txt
+pip install -r requirments.txt
 ```
 #### FastAPI
 
 В папке **fastapi**, выполнить:
 
-`python main.py`
+`uvicorn main:app --reload`
 
 После того как вы запустите свою БД, выполнив команду выше будут подняты инстансы fastApi и PostgreSQL. Далее необходимо запустить клиентскую часть приложения
 

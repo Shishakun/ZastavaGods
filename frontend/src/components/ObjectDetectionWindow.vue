@@ -8,7 +8,7 @@
         class="ml-72 w-4/6 outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500"
       >
         <div class="h-full">
-          <img class="h-full w-full rounded-xl p-1" :src="videoStream" />
+          <img class="h-full w-full rounded-xl p-1" :src="videoStreamUrl" />
         </div>
       </div>
       <div
@@ -82,6 +82,7 @@ export default {
       videoStream: "",
       websocket: null,
       videoStreamActive: false,
+      videoStreamUrl: "",
     };
   },
   methods: {
@@ -102,7 +103,8 @@ export default {
         if (event.data instanceof Blob) {
           const blob = event.data;
           const url = URL.createObjectURL(blob);
-          this.videoStream = url;
+          this.videoStreamUrl = url; // Устанавливаем URL изображения для отображения
+          console.log("Blob URL:", url);
         } else {
           console.error("Received unexpected data format:", event.data);
         }
@@ -114,6 +116,7 @@ export default {
         console.error("WebSocket error:", error);
       };
     },
+
     stopVideoStream() {
       if (this.websocket) {
         this.websocket.close();

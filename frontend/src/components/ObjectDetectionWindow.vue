@@ -8,11 +8,7 @@
         class="ml-72 w-4/6 outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500"
       >
         <div class="h-full">
-          <video
-            class="h-full w-full rounded-xl p-1"
-            ref="video"
-            autoplay
-          ></video>
+          <img class="h-full w-full rounded-xl p-1" :src="videoStream" />
         </div>
       </div>
       <div
@@ -70,9 +66,11 @@
     </div>
   </div>
 </template>
+
 <script>
 import BaseIcon from "./BaseIcon.vue";
 import SidebarMain from "./SidebarMain.vue";
+
 export default {
   components: {
     BaseIcon,
@@ -81,34 +79,54 @@ export default {
   data() {
     return {
       activeButton: null,
+      videoStream: "",
+      videoStreamActive: false, // флаг активности видеопотока
     };
   },
   methods: {
     handleButtonClick(cameraNumber) {
       if (this.activeButton === cameraNumber) {
+        // Если кнопка уже активна, отключаем видеопоток
         this.activeButton = null;
+        this.videoStreamActive = false;
       } else {
+        // Если кнопка не активна, включаем видеопоток
         this.activeButton = cameraNumber;
+        this.videoStreamActive = true;
+        this.updateVideoStream(); // Вызываем метод обновления видеопотока
       }
     },
-  },
-  computed: {
-    isDarkMode() {
-      return this.$store.state.darkMode;
+    updateVideoStream() {
+      // Проверяем, активен ли видеопоток
+      if (!this.videoStreamActive) return;
+
+      // Запрос на получение видеопотока с сервера
+      fetch("http://localhost:8000/objectdetect")
+        .then((response) => {
+          // Проверка статуса ответа
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          // Возвращаем поток данных в формате blob
+          return response.blob();
+        })
+        .then((blob) => {
+          // Создаем объект URL для полученного blob
+          const blobUrl = URL.createObjectURL(blob);
+          // Устанавливаем URL как источник для img
+          this.videoStream = blobUrl;
+
+          // Рекурсивно вызываем метод обновления видеопотока
+          this.updateVideoStream();
+        })
+        .catch((error) => {
+          console.error("There was a problem with the fetch operation:", error);
+        });
     },
-  },
-  mounted() {
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((stream) => {
-        this.$refs.video.srcObject = stream;
-      })
-      .catch((error) => {
-        console.log("Error accessing webcam:", error);
-      });
   },
 };
 </script>
+
 <style>
 .custom-scrollbar {
   scrollbar-width: thin;

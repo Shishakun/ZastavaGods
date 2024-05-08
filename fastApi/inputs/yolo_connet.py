@@ -1,9 +1,11 @@
 from ultralytics import YOLO
 import cv2
 import torch
+from loguru import logger
 
 
 model = YOLO("./bestB.pt")
+
 class_colors = \
     {
         0: (255, 0, 0),

@@ -1,24 +1,9 @@
-from Services.yolo_connet import *
+from yolo_connet import *
 import os
 
 class RTSPCamera:
-    def __init__(self, rtsp_links, save_labels_folder, save_frames_folder):
-        self.rtsp_links = rtsp_links
-        self.save_labels_folder = save_labels_folder
-        self.save_frames_folder = save_frames_folder
-
     def process_video(self):
-        capture = cv2.VideoCapture(self.rtsp_links[0])
-        capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        capture.set(cv2.CAP_PROP_POS_MSEC, 100)
-
-        if not capture.isOpened():
-            print(self.rtsp_links[0])
-            raise Exception(f'Failed to open RTSP link: {self.rtsp_links[0]}')
-
-        frame_count = 0
-        class_labels = ['knife', 'pistol', 'gun', 'riffle']
+    
 
         while True:
 

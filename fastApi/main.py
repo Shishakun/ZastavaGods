@@ -9,12 +9,13 @@ from pathlib import Path
 from inputs.yolo_connet import *
 import os
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, Form, File, UploadFile, HTTPException
+from fastapi import FastAPI, Form, File, UploadFile, HTTPException, WebSocket
 from fastapi.responses import JSONResponse, StreamingResponse
 from loguru import logger
 from inputs.yamnetrec import process_audio
 from pydantic import BaseModel
 from inputs.facerecognition import *
+import asyncio
 from fastapi.staticfiles import StaticFiles
 
 
@@ -256,70 +257,72 @@ async def submit_person_data(
     conn.commit()
     return {"message": "Данные успешно получены и обработаны"}
 
-
-@app.get("/objectdetect")
 async def detection():
-    def process_video():
-        capture = cv2.VideoCapture(0)
-        capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        capture.set(cv2.CAP_PROP_POS_MSEC, 100)
-        if not capture.isOpened():
-            print(capture)
-            raise Exception(f"Failed to open RTSP link: {capture}")
-        class_labels = ["MilitaryVehicle", "People", "car", "drone"]
-        while True:
+    capture = cv2.VideoCapture(0)
+    capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    capture.set(cv2.CAP_PROP_POS_MSEC, 100)
+    if not capture.isOpened():
+        print(capture)
+        raise Exception(f"Failed to open RTSP link: {capture}")
+    class_labels = ["MilitaryVehicle", "People", "car", "drone"]
+    while True:
 
-            ret, frame = capture.read()
+        ret, frame = capture.read()
 
-            if ret:
-
-                if torch.cuda.is_available():
-                    result = model(frame, device=0)
-                else:
-                    result = model(frame, conf=0.3)
-
+        if ret:
+            ret, buffer = cv2.imencode('.jpg', frame)
+            if torch.cuda.is_available():
+                result = model(frame, device=0)
+            else:
                 result = model(frame, conf=0.3)
 
-                for result_item in result[0]:
-                    if result_item is not None and len(result_item) >= 6:  # Проверяем, есть ли данные и содержат ли они необходимое количество значений
-                        boxes = result_item[:, :4].cpu().numpy()
-                        classes = result_item[:, 5].cpu().numpy()
-                        confidences = result_item[:, 4].cpu().numpy()
+            result = model(frame, conf=0.3)
 
-                        for box, cls, conf in zip(boxes, classes, confidences):
-                            x1, y1, x2, y2 = box.astype(int)
-                            cls = int(cls)
-                            conf = round(float(conf), 2)
+            for result_item in result[0]:
+                if (
+                    result_item is not None and len(result_item) >= 6
+                ):  # Проверяем, есть ли данные и содержат ли они необходимое количество значений
+                    boxes = result_item[:, :4].cpu().numpy()
+                    classes = result_item[:, 5].cpu().numpy()
+                    confidences = result_item[:, 4].cpu().numpy()
 
-                            label = class_labels[cls] + str(conf)
-                            box_color = class_colors.get(cls, (255, 255, 255))
+                    for box, cls, conf in zip(boxes, classes, confidences):
+                        x1, y1, x2, y2 = box.astype(int)
+                        cls = int(cls)
+                        conf = round(float(conf), 2)
 
-                            (label_width, label_height), _ = cv2.getTextSize(
-                                label, class_font, class_font_scale, 1
-                            )
-                            text_position = (x1, y1 - 3 - label_height)
+                        label = class_labels[cls] + str(conf)
+                        box_color = class_colors.get(cls, (255, 255, 255))
 
-                            cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
-                            cv2.putText(
-                                frame,
-                                label,
-                                text_position,
-                                class_font,
-                                class_font_scale,
-                                box_color,
-                                2,
-                            )
+                        (label_width, label_height), _ = cv2.getTextSize(
+                            label, class_font, class_font_scale, 1
+                        )
+                        text_position = (x1, y1 - 3 - label_height)
 
-                        cv2.imshow("Cam", frame)
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
+                        cv2.putText(
+                            frame,
+                            label,
+                            text_position,
+                            class_font,
+                            class_font_scale,
+                            box_color,
+                            2,
+                        )
 
-                _, jpeg = cv2.imencode(".jpg", frame)
-                frame_bytes = jpeg.tobytes()
-                yield (
-                    b"--frame\r\n"
-                    b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n\r\n"
-                )    
-    return StreamingResponse(process_video(), media_type="multipart/x-mixed-replace; boundary=frame")
+                    cv2.imshow("Cam", frame)
+
+            _, jpeg = cv2.imencode(".jpg", frame)
+            frame_bytes = base64.b64encode(buffer)
+            await asyncio.sleep(0.03)
+            yield frame_bytes
+            
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    async for frame_bytes in detection():
+        await websocket.send_bytes(frame_bytes)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8080)

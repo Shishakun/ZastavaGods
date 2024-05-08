@@ -80,48 +80,46 @@ export default {
     return {
       activeButton: null,
       videoStream: "",
-      videoStreamActive: false, // флаг активности видеопотока
+      websocket: null,
+      videoStreamActive: false,
     };
   },
   methods: {
     handleButtonClick(cameraNumber) {
       if (this.activeButton === cameraNumber) {
-        // Если кнопка уже активна, отключаем видеопоток
         this.activeButton = null;
         this.videoStreamActive = false;
+        this.stopVideoStream(); // Добавляем метод остановки видеопотока
       } else {
-        // Если кнопка не активна, включаем видеопоток
         this.activeButton = cameraNumber;
         this.videoStreamActive = true;
-        this.updateVideoStream(); // Вызываем метод обновления видеопотока
+        this.startVideoStream();
       }
     },
-    updateVideoStream() {
-      // Проверяем, активен ли видеопоток
-      if (!this.videoStreamActive) return;
-
-      // Запрос на получение видеопотока с сервера
-      fetch("http://localhost:8000/objectdetect")
-        .then((response) => {
-          // Проверка статуса ответа
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          // Возвращаем поток данных в формате blob
-          return response.blob();
-        })
-        .then((blob) => {
-          // Создаем объект URL для полученного blob
-          const blobUrl = URL.createObjectURL(blob);
-          // Устанавливаем URL как источник для img
-          this.videoStream = blobUrl;
-
-          // Рекурсивно вызываем метод обновления видеопотока
-          this.updateVideoStream();
-        })
-        .catch((error) => {
-          console.error("There was a problem with the fetch operation:", error);
-        });
+    startVideoStream() {
+      this.websocket = new WebSocket("ws://localhost:8000/ws");
+      this.websocket.onmessage = (event) => {
+        if (event.data instanceof Blob) {
+          const blob = event.data;
+          const url = URL.createObjectURL(blob);
+          this.videoStream = url;
+        } else {
+          console.error("Received unexpected data format:", event.data);
+        }
+      };
+      this.websocket.onopen = () => {
+        console.log("WebSocket connection established.");
+      };
+      this.websocket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+    },
+    stopVideoStream() {
+      if (this.websocket) {
+        this.websocket.close();
+        this.websocket = null;
+        this.videoStream = ""; // Очищаем videoStream при остановке видеопотока
+      }
     },
   },
 };

@@ -32,7 +32,7 @@ app.add_middleware(
 
 app.mount("/inputs/people", StaticFiles(directory="inputs/people"), name="people")
 
-FaceRecognition.encode_faces()
+# FaceRecognition.encode_faces()
 
 
 class ImageRequest(BaseModel):

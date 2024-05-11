@@ -8,7 +8,7 @@
         class="ml-72 w-4/6 outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500"
       >
         <div class="h-full">
-          <img class="h-full w-full rounded-xl p-1" :src="videoStreamUrl" />
+          <video ref="videoElement" width="640" height="480" autoplay></video>
         </div>
       </div>
       <div
@@ -79,10 +79,9 @@ export default {
   data() {
     return {
       activeButton: null,
-      videoStream: "",
-      websocket: null,
       videoStreamActive: false,
-      videoStreamUrl: "",
+      websocket: null,
+      videoElement: null,
     };
   },
   methods: {
@@ -98,16 +97,12 @@ export default {
       }
     },
     startVideoStream() {
+      this.videoElement = this.$refs.videoElement;
       this.websocket = new WebSocket("ws://localhost:8000/ws");
       this.websocket.onmessage = (event) => {
-        if (event.data instanceof Blob) {
-          const blob = event.data;
-          const url = URL.createObjectURL(blob);
-          this.videoStreamUrl = url; // Устанавливаем URL изображения для отображения
-          console.log("Blob URL:", url);
-        } else {
-          console.error("Received unexpected data format:", event.data);
-        }
+        const imageUrl = "data:image/jpeg;base64," + event.data;
+        this.$refs.videoElement.scr = imageUrl;
+        console.log(imageUrl);
       };
       this.websocket.onopen = () => {
         console.log("WebSocket connection established.");

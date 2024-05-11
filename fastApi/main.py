@@ -1,23 +1,21 @@
-import uvicorn
+import asyncio
 import base64
 import io
-import numpy as np
+from pathlib import Path
+
 import psycopg2
 import pyaudio
+import uvicorn
 from PIL import Image
-from pathlib import Path
-from inputs.yolo_connet import *
-import os
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Form, File, UploadFile, HTTPException, WebSocket
-from fastapi.responses import JSONResponse, StreamingResponse
-from loguru import logger
-from inputs.yamnetrec import process_audio
-from pydantic import BaseModel
-from inputs.facerecognition import *
-import asyncio
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
+from inputs.facerecognition import *
+from inputs.yamnetrec import process_audio
+from inputs.yolo_connet import *
 
 face_recognition = FaceRecognition()
 app = FastAPI()
@@ -33,7 +31,6 @@ app.add_middleware(
 )
 
 app.mount("/inputs/people", StaticFiles(directory="inputs/people"), name="people")
-
 
 FaceRecognition.encode_faces()
 
@@ -207,14 +204,13 @@ async def upload_image(image_data: ImageRequest):
 
 @app.post("/uploadPeople")
 async def submit_person_data(
-    surname: str = Form(...),
-    name: str = Form(...),
-    patronymic: str = Form(...),
-    otdel: str = Form(...),
-    secret: int = Form(...),
-    file: UploadFile = File(...),
+        surname: str = Form(...),
+        name: str = Form(...),
+        patronymic: str = Form(...),
+        otdel: str = Form(...),
+        secret: int = Form(...),
+        file: UploadFile = File(...),
 ):
-
     # Create a directory for the photo
     people_dir = f"inputs\people\{surname}_{name}_{patronymic}"
     os.makedirs(people_dir, exist_ok=True)
@@ -257,6 +253,13 @@ async def submit_person_data(
     conn.commit()
     return {"message": "Данные успешно получены и обработаны"}
 
+
+# Define class font and colors if needed
+class_font = cv2.FONT_HERSHEY_SIMPLEX
+class_font_scale = 1
+class_colors = {0: (255, 0, 0), 1: (0, 255, 0), 2: (0, 0, 255), 3: (255, 255, 0)}
+
+
 async def detection():
     capture = cv2.VideoCapture(0)
     capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
@@ -264,10 +267,10 @@ async def detection():
     capture.set(cv2.CAP_PROP_POS_MSEC, 100)
     if not capture.isOpened():
         print(capture)
-        raise Exception(f"Failed to open RTSP link: {capture}")
+        raise Exception("Failed to open the capture device")
+
     class_labels = ["MilitaryVehicle", "People", "car", "drone"]
     while True:
-
         ret, frame = capture.read()
 
         if ret:
@@ -277,12 +280,8 @@ async def detection():
             else:
                 result = model(frame, conf=0.3)
 
-            result = model(frame, conf=0.3)
-
             for result_item in result[0]:
-                if (
-                    result_item is not None and len(result_item) >= 6
-                ):  # Проверяем, есть ли данные и содержат ли они необходимое количество значений
+                if result_item is not None and len(result_item) >= 6:
                     boxes = result_item[:, :4].cpu().numpy()
                     classes = result_item[:, 5].cpu().numpy()
                     confidences = result_item[:, 4].cpu().numpy()
@@ -311,18 +310,18 @@ async def detection():
                             2,
                         )
 
-                    cv2.imshow("Cam", frame)
-
             _, jpeg = cv2.imencode(".jpg", frame)
-            frame_bytes = base64.b64encode(buffer)
+            frame_bytes = jpeg.tobytes()
             await asyncio.sleep(0.03)
-            yield frame_bytes
-            
+            yield base64.b64encode(frame_bytes)
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     async for frame_bytes in detection():
         await websocket.send_bytes(frame_bytes)
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8080)

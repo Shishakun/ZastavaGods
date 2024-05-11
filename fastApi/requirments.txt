@@ -10,7 +10,7 @@ charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
 decorator==5.1.1
-dlib @ file:///S:/Windows%20Defender%20Security/Shisha/Clone/ZastavaGods/fastApi/dlib-19.22.99-cp38-cp38-win_amd64.whl
+#dlib @ file:///S:/Windows%20Defender%20Security/Shisha/Clone/ZastavaGods/fastApi/dlib-19.22.99-cp38-cp38-win_amd64.whl
 exceptiongroup==1.2.0
 face-recognition==1.3.0
 face-recognition-models==0.3.0

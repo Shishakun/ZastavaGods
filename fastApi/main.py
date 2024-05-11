@@ -35,7 +35,7 @@ app.add_middleware(
 app.mount("/inputs/people", StaticFiles(directory="inputs/people"), name="people")
 
 
-# FaceRecognition.encode_faces()
+FaceRecognition.encode_faces()
 
 
 class ImageRequest(BaseModel):
@@ -257,7 +257,6 @@ async def submit_person_data(
     conn.commit()
     return {"message": "Данные успешно получены и обработаны"}
 
-
 async def detection():
     capture = cv2.VideoCapture(0)
     capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
@@ -272,6 +271,7 @@ async def detection():
         ret, frame = capture.read()
 
         if ret:
+            ret, buffer = cv2.imencode('.jpg', frame)
             if torch.cuda.is_available():
                 result = model(frame, device=0)
             else:
@@ -312,18 +312,17 @@ async def detection():
                         )
 
                     cv2.imshow("Cam", frame)
+
             _, jpeg = cv2.imencode(".jpg", frame)
-            frame_bytes = jpeg.tobytes()
-            yield (
-                b"--frame\r\n"
-                b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n\r\n"
-            )
-
-
-@app.get("/detect")
-async def get_video_stream():
-    return StreamingResponse(detection(), media_type="multipart/x-mixed-replace; boundary=frame")
-
+            frame_bytes = base64.b64encode(buffer)
+            await asyncio.sleep(0.03)
+            yield frame_bytes
+            
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    async for frame_bytes in detection():
+        await websocket.send_bytes(frame_bytes)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8080)

@@ -97,33 +97,44 @@ export default {
         this.startVideoStream();
       }
     },
-    startVideoStream() {
-      this.websocket = new WebSocket("ws://localhost:8000/ws");
-      this.websocket.onmessage = (event) => {
-        if (event.data instanceof Blob) {
-          const blob = event.data;
-          const url = URL.createObjectURL(blob);
-          this.videoStreamUrl = url; // Устанавливаем URL изображения для отображения
-          console.log("Blob URL:", url);
-        } else {
-          console.error("Received unexpected data format:", event.data);
+    async startVideoStream() {
+      try {
+        const response = await fetch("http://localhost:8000/detect"); // делаем запрос на ваше API
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
         }
-      };
-      this.websocket.onopen = () => {
-        console.log("WebSocket connection established.");
-      };
-      this.websocket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-    },
-
-    stopVideoStream() {
-      if (this.websocket) {
-        this.websocket.close();
-        this.websocket = null;
-        this.videoStream = ""; // Очищаем videoStream при остановке видеопотока
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let received = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            break;
+          }
+          received += decoder.decode(value);
+          // разбиваем полученные данные на кадры и выбираем только изображение
+          const frames = received.split("--frame\r\n");
+          for (const frame of frames) {
+            if (frame.includes("Content-Type: image/jpeg")) {
+              const startIndex = frame.indexOf("\r\n\r\n") + 4;
+              const imageData = frame.substring(startIndex);
+              // обновляем изображение
+              this.imageSrc = `data:image/jpeg;base64, ${imageData}`;
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching image:", error);
       }
     },
+  },
+
+  stopVideoStream() {
+    if (this.websocket) {
+      this.websocket.close();
+      this.websocket = null;
+      this.videoStream = ""; // Очищаем videoStream при остановке видеопотока
+    }
   },
 };
 </script>

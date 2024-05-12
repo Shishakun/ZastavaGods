@@ -89,7 +89,7 @@ export default {
       if (this.activeButton === cameraNumber) {
         this.activeButton = null;
         this.videoStreamActive = false;
-        this.stopVideoStream(); // Добавляем метод остановки видеопотока
+        this.stopVideoStream(); // Add method to stop video stream
       } else {
         this.activeButton = cameraNumber;
         this.videoStreamActive = true;
@@ -98,15 +98,19 @@ export default {
     },
     startVideoStream() {
       this.videoElement = this.$refs.videoElement;
-      this.websocket = new WebSocket("ws://localhost:8000/ws");
+      this.websocket = new WebSocket("ws://localhost:8080/ws");
+      this.websocket.binaryType = "arraybuffer";
+
       this.websocket.onmessage = (event) => {
-        const imageUrl = "data:image/jpeg;base64," + event.data;
-        this.$refs.videoElement.scr = imageUrl;
-        console.log(imageUrl);
+        const arrayBuffer = event.data;
+        const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
+        this.videoElement.src = URL.createObjectURL(blob);
       };
+
       this.websocket.onopen = () => {
         console.log("WebSocket connection established.");
       };
+
       this.websocket.onerror = (error) => {
         console.error("WebSocket error:", error);
       };
@@ -116,7 +120,7 @@ export default {
       if (this.websocket) {
         this.websocket.close();
         this.websocket = null;
-        this.videoStream = ""; // Очищаем videoStream при остановке видеопотока
+        this.videoElement.src = ""; // Clear video stream on stop
       }
     },
   },

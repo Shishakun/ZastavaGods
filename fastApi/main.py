@@ -265,55 +265,48 @@ async def submit_person_data(
 async def get_stream(websocket: WebSocket):
     await websocket.accept()
     try:
-        capture = cv2.VideoCapture(0)
-        capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        capture.set(cv2.CAP_PROP_POS_MSEC, 100)
-        if not capture.isOpened():
-            print(capture)
-            raise Exception("Failed to open the capture device")
 
-        class_labels = ["MilitaryVehicle", "People", "car", "drone"]
+        cap = cv2.VideoCapture(0)
+        cap.set(3, 640)
+        cap.set(4, 480)
+
+        # object classes
+        class_names = ["MilitaryVehicle", "People", "car", "drone"]
+
         while True:
-            ret, frame = capture.read()
+            success, img = cap.read()
+            results = model(img, stream=True)
 
-            if ret:
-                if torch.cuda.is_available():
-                    result = model(frame, device=0)
-                else:
-                    result = model(frame, conf=0.3)
+            # coordinates
+            for r in results:
+                boxes = r.boxes
 
-                for result_item in result[0]:
-                    if result_item is not None and len(result_item) >= 6:
-                        boxes = result_item[:, :4].cpu().numpy()
-                        classes = result_item[:, 5].cpu().numpy()
-                        confidences = result_item[:, 4].cpu().numpy()
+                for box in boxes:
+                    # bounding box
+                    x1, y1, x2, y2 = box.xyxy[0]
+                    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
 
-                        for box, cls, conf in zip(boxes, classes, confidences):
-                            x1, y1, x2, y2 = box.astype(int)
-                            cls = int(cls)
-                            conf = round(float(conf), 2)
+                    # put box in cam
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
 
-                            label = class_labels[cls] + str(conf)
-                            box_color = class_colors.get(cls, (255, 255, 255))
+                    # confidence
+                    confidence = math.ceil((box.conf[0] * 100)) / 100
+                    print("Confidence --->", confidence)
 
-                            (label_width, label_height), _ = cv2.getTextSize(
-                                label, class_font, class_font_scale, 1
-                            )
-                            text_position = (x1, y1 - 3 - label_height)
+                    # class name
+                    cls = int(box.cls[0])
+                    print("Class name -->", class_names[cls])
 
-                            cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
-                            cv2.putText(
-                                frame,
-                                label,
-                                text_position,
-                                class_font,
-                                class_font_scale,
-                                box_color,
-                                2,
-                            )
+                    # object details
+                    org = [x1, y1]
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    fontScale = 1
+                    color = (255, 0, 0)
+                    thickness = 2
 
-                _, jpeg = cv2.imencode(".jpg", frame)
+                    cv2.putText(img, class_names[cls], org, font, fontScale, color, thickness)
+
+                _, jpeg = cv2.imencode(".jpg", img)
                 frame_bytes = jpeg.tobytes()
                 await websocket.send_bytes(frame_bytes)
                 await asyncio.sleep(0.03)

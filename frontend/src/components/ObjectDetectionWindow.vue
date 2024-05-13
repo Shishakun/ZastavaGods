@@ -96,7 +96,7 @@ export default {
       }
     },
     startVideoStream() {
-      this.websocket = new WebSocket("ws://localhost:8000/ws");
+      this.websocket = new WebSocket("ws://localhost:8080/ws");
       this.websocket.onmessage = (event) => {
         console.log(event.data)
         const imageUrl = URL.createObjectURL(

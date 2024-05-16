@@ -18,6 +18,14 @@
     >
       <div class="flex justify-between px-16 pt-6">
         <div class="flex flex-col items-center">
+          <div class="">
+            <button
+              @click="toggleVideo"
+              class="mt-4 w-full h-10 text-white rounded"
+            >
+              {{ isVideoOn ? "Выключить" : "Включить" }} видео
+            </button>
+          </div>
           <div
             class="flex flex-col border-[1px] border-activeText w-[30vw] rounded-xl"
           >
@@ -80,6 +88,7 @@ export default {
       otdel: "",
       secret: "",
       photo_path: "",
+      isVideoOn: false,
     };
   },
   methods: {
@@ -135,15 +144,32 @@ export default {
         }, 2000);
       }
     },
+    toggleVideo() {
+      if (!this.isVideoOn) {
+        const constraints = { video: true };
+        navigator.mediaDevices
+          .getUserMedia(constraints)
+          .then((stream) => {
+            const video = this.$refs.video;
+            video.srcObject = stream;
+            video.play();
+            this.isVideoOn = true;
+          })
+          .catch((error) => {
+            console.error("Error accessing the camera:", error);
+            // Handle error, show message to the user, etc.
+          });
+      } else {
+        const video = this.$refs.video;
+        const stream = video.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach((track) => track.stop());
+        video.srcObject = null;
+        this.isVideoOn = false;
+      }
+    },
   },
-  async mounted() {
-    const constraints = { video: true };
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-    const video = this.$refs.video;
-    video.srcObject = stream;
-    video.play();
-  },
   computed: {
     getImage() {
       return `http://localhost:8000/inputs/people/${this.photo_path}`;

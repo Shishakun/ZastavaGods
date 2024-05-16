@@ -8,7 +8,7 @@
         class="ml-72 w-4/6 outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500"
       >
         <div class="h-full">
-          <img ref="image" :src="imageSrc" />
+          <img ref="image" :src="imageSrc" class="h-full w-full rounded-xl"/>
         </div>
       </div>
       <div
@@ -96,7 +96,7 @@ export default {
       }
     },
     startVideoStream() {
-      this.websocket = new WebSocket("ws://localhost:8080/ws");
+      this.websocket = new WebSocket("ws://localhost:8000/ws");
       this.websocket.onmessage = (event) => {
         console.log(event.data)
         const imageUrl = URL.createObjectURL(
@@ -119,7 +119,7 @@ export default {
       if (this.websocket) {
         this.websocket.close();
         this.websocket = null;
-        this.videoElement.src = ""; // Clear video stream on stop
+        this.imageSrc = ""; // Clear video stream on stop
       }
     },
   },

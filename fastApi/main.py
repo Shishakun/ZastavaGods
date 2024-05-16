@@ -39,7 +39,7 @@ app.add_middleware(
 app.mount("/inputs/people", StaticFiles(directory="inputs/people"), name="people")
 
 
-# FaceRecognition.encode_faces()
+FaceRecognition.encode_faces()
 
 
 class ImageRequest(BaseModel):
@@ -287,7 +287,7 @@ async def get_stream(websocket: WebSocket):
                     x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
 
                     # put box in cam
-                    cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (255, 255, 255), 1)
 
                     # confidence
                     confidence = math.ceil((box.conf[0] * 100)) / 100
@@ -299,10 +299,10 @@ async def get_stream(websocket: WebSocket):
 
                     # object details
                     org = [x1, y1]
-                    font = cv2.FONT_HERSHEY_SIMPLEX
-                    fontScale = 1
-                    color = (255, 0, 0)
-                    thickness = 2
+                    font = cv2.FONT_HERSHEY_DUPLEX
+                    fontScale = 0.4
+                    color = (0, 0, 0)
+                    thickness = 1
 
                     cv2.putText(img, class_names[cls], org, font, fontScale, color, thickness)
 

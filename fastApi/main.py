@@ -20,7 +20,8 @@ from starlette.websockets import WebSocketDisconnect
 from websockets import ConnectionClosed
 
 from inputs.facerecognition import *
-from inputs.yamnetrec import process_audio
+from inputs import yamnetrec
+from inputs.yamnetrec import *
 from inputs.yolo_connet import *
 
 app = FastAPI()
@@ -46,32 +47,21 @@ class ImageRequest(BaseModel):
     image: str
 
 
-@app.get("/yamnet")
-async def get_yamnet_result():
-    result = process_audio()
-    return {"result": result}
-
-
-@app.get("/yamnetgraph")
-async def get_graph():
-    CHUNK = 1024
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 1
-    RATE = 44100
-
-    p = pyaudio.PyAudio()
-
-    stream = p.open(
-        format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK
-    )
-
-    while True:
-        data = np.frombuffer(stream.read(CHUNK), dtype=np.int16)
-        # Здесь обработайте аудиоданные и анализируйте их частоту
-
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
+@app.websocket("/ws/yamnet")
+async def yamnet_stream(websocket: WebSocket):
+    await websocket.accept()
+    yamnetrec.start_processing()
+    try:
+        while True:
+            if yamnetrec.processing:
+                result = yamnetrec.get_latest_result()
+                await websocket.send_text(result)
+                await asyncio.sleep(2)  # Отправка данных каждые 2 секунды
+            else:
+                await asyncio.sleep(0.1)  # Проверяем состояние каждые 100 мс
+    except (WebSocketDisconnect, ConnectionClosed):
+        yamnetrec.stop_processing()
+        print("Client disconnected")
 
 
 @app.get("/getperson")

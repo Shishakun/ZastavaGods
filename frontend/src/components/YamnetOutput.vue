@@ -4,7 +4,7 @@
       {{ startYamnet ? "Отключить распознавание" : "Включить распознавание" }}
     </button>
     <div
-      class="font-roboto items-center text-center text-xl font-bold mt-2 border-activeText text-activeText border-[1px] p-2 h-12 p rounded-xl"
+      class="font-roboto items-center text-center text-xl font-bold mt-2 border-activeText text-activeText border-[1px] p-2 h-12 rounded-xl"
     >
       {{ yamnetResult }}
     </div>
@@ -17,6 +17,7 @@ export default {
     return {
       yamnetResult: null,
       startYamnet: false,
+      socket: null,
       classesWithRedBackground: [
         "Gunshot",
         "gunfire",
@@ -38,41 +39,43 @@ export default {
         "Aircraft",
         "Helicopter",
       ],
+      eventLog: [], // Журнал событий
     };
   },
   methods: {
-    async fetchYamnetResult() {
-      if (this.startYamnet) {
-        try {
-          const response = await fetch("http://localhost:8000/yamnet");
-          const data = await response.json();
-
-          if (data.result && data.result.length > 0) {
-            const result = data.result[0];
-            const formattedResult = this.formatResult(result);
-            this.yamnetResult = formattedResult;
-          } else {
-            this.yamnetResult = "No result available";
-          }
-
-          console.log(data);
-          console.log(this.yamnetResult);
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    },
     toggleYamnet() {
       this.startYamnet = !this.startYamnet;
-      if (!this.startYamnet) {
-        setInterval(() => {
+      if (this.startYamnet) {
+        this.startWebSocket();
+      } else {
+        this.stopWebSocket();
+      }
+    },
+    startWebSocket() {
+      this.socket = new WebSocket("ws://localhost:8000/ws/yamnet");
+      this.socket.onmessage = this.onMessage;
+      this.socket.onopen = () => {
+        console.log("WebSocket connection opened");
+      };
+      this.socket.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+    },
+    stopWebSocket() {
+      if (this.socket) {
+        this.socket.close();
+        this.socket = null;
+        setTimeout(() => {
           this.yamnetResult = null;
         }, 10000);
-        // очищаем результат, чтобы не отображать устаревшие данные
-        clearInterval(this.interval); // останавливаем интервал обновления данных
-      } else {
-        this.fetchYamnetResult(); // если startYamnet стало true, сразу запрашиваем данные
-        this.interval = setInterval(this.fetchYamnetResult, 2000); // запускаем интервал обновления данных
+      }
+    },
+    onMessage(event) {
+      const data = event.data;
+      this.yamnetResult = this.formatResult(data);
+
+      if (this.isRedBackground()) {
+        this.logEvent(this.yamnetResult);
       }
     },
     isRedBackground() {
@@ -92,6 +95,11 @@ export default {
         return `${label}: ${value}`;
       });
       return `Текущее событие: ${formattedParts.join("; ")}`;
+    },
+    logEvent(formattedResult) {
+      const timestamp = new Date().toLocaleString();
+      this.eventLog.push(`${timestamp} - ${formattedResult}`);
+      this.$emit("update-event-log", this.eventLog);
     },
   },
 };

@@ -16,13 +16,6 @@
       <div class="items-center px-14">
         <YamnetOutput />
       </div>
-      <div class="flex items-center justify-center gap-4 px-14 pt-4">
-        <div
-          class="flex flex-col border-[1px] border-activeText w-full h-full rounded-xl"
-        >
-          <canvas ref="chartCanvas" class="h-[35vh] rounded-xl p-1"> </canvas>
-        </div>
-      </div>
       <div
         class="flex w-full justify-center px-14 py-4 gap-4 duration-500 min-h-[80vh]"
       >
@@ -82,22 +75,6 @@ export default {
     },
   },
   methods: {
-    handleFilesUpload() {
-      this.uploadFile = this.$refs.files.files[0];
-      const typeFile = this.uploadFile.type;
-      this.url = URL.createObjectURL(this.uploadFile);
-      console.log(typeFile);
-      this.files.push(this.uploadFile.name);
-      console.log(this.files);
-      if (
-        this.uploadFile.type.startsWith("image") ||
-        this.uploadFile.type.startsWith("application")
-      ) {
-        this.isPhoto = true;
-      } else {
-        this.isPhoto = false;
-      }
-    },
     scrollToBottom() {
       window.scrollTo({
         top: document.body.scrollHeight,
@@ -142,31 +119,6 @@ export default {
           }.bind(this)
         );
     },
-  },
-  mounted() {
-    this.ctx = this.$refs.chartCanvas.getContext("2d");
-    this.chart = new Chart(this.ctx, {
-      type: "line",
-      data: {
-        labels: [], // Массив для меток времени
-        datasets: [
-          {
-            label: "Частота звука",
-            data: [], // Массив для данных частоты звука
-            borderColor: "blue",
-            backgroundColor: "transparent",
-          },
-        ],
-      },
-      options: {
-        animation: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-          },
-        },
-      },
-    });
   },
 };
 </script>

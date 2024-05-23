@@ -28,7 +28,7 @@
             >
               <button
                 class="border-2 flex gap-3 w-full rounded-xl px-3 py-2 items-center duration-300"
-                v-for="i in 4"
+                v-for="i in 1"
                 :key="i"
                 :class="[
                   'bg-[#272727] text-[#d5d5d5] items-center justify-center font-semibold rounded-xl px-2.5 py-1.5 duration-100 flex hover:bg-[#424242]',

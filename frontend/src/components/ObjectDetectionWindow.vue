@@ -68,6 +68,7 @@
             class="border-b border-gray-200 py-2 text-neutral-50 px-10 flex gap-10"
           >
             <div>
+              <p><strong>Время:</strong> {{ item.timestamp }}</p>
               <p><strong>Класс:</strong> {{ item.class }}</p>
               <p><strong>Уверенность:</strong> {{ item.confidence }}</p>
               <p><strong>Границы:</strong> {{ item.bounding_box }}</p>
@@ -124,11 +125,13 @@ export default {
         const imageUrl = `data:image/jpeg;base64,${message.image}`;
         this.imageSrc = imageUrl;
         this.detectionData = message.message.map((item) => {
+          const timestamp = new Date().toLocaleString();
           return {
             class: item.class,
             confidence: item.confidence,
             bounding_box: item.bounding_box,
             cropped_image: `data:image/jpeg;base64,${item.cropped_image}`,
+            timestamp: timestamp,
           };
         });
         console.log(this.detectionData);

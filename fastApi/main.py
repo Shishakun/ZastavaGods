@@ -211,12 +211,12 @@ async def upload_image(image_data: ImageRequest):
 
 @app.post("/uploadPeople")
 async def submit_person_data(
-        surname: str = Form(...),
-        name: str = Form(...),
-        patronymic: str = Form(...),
-        otdel: str = Form(...),
-        secret: int = Form(...),
-        file: UploadFile = File(...),
+    surname: str = Form(...),
+    name: str = Form(...),
+    patronymic: str = Form(...),
+    otdel: str = Form(...),
+    secret: int = Form(...),
+    file: UploadFile = File(...),
 ):
     # Create a directory for the photo
     people_dir = f"inputs\people\{surname}_{name}_{patronymic}"
@@ -272,7 +272,7 @@ async def get_stream(websocket: WebSocket):
 
         # object classes
         class_names = ["MilitaryVehicle", "People", "car", "drone"]
-
+        data = []
         while True:
             success, img = cap.read()
             results = model(img, stream=True)
@@ -284,7 +284,12 @@ async def get_stream(websocket: WebSocket):
                 for box in boxes:
                     # bounding box
                     x1, y1, x2, y2 = box.xyxy[0]
-                    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
+                    x1, y1, x2, y2 = (
+                        int(x1),
+                        int(y1),
+                        int(x2),
+                        int(y2),
+                    )  # convert to int values
 
                     # put box in cam
                     cv2.rectangle(img, (x1, y1), (x2, y2), (255, 255, 255), 1)
@@ -304,14 +309,31 @@ async def get_stream(websocket: WebSocket):
                     color = (0, 0, 0)
                     thickness = 1
 
-                    cv2.putText(img, class_names[cls], org, font, fontScale, color, thickness)
+                    cv2.putText(
+                        img, class_names[cls], org, font, fontScale, color, thickness
+                    )
+
+                    data.append(
+                        {
+                            "class": class_names[cls],
+                            "confidence": confidence,
+                            "bounding_box": [x1, y1, x2, y2],
+                        }
+                    )
+                    await websocket.send_json(data)
 
                 _, jpeg = cv2.imencode(".jpg", img)
                 frame_bytes = jpeg.tobytes()
-                await websocket.send_bytes(frame_bytes)
+                frame_base64 = base64.b64encode(frame_bytes).decode("utf-8")
+
+                message = {"message": data, "image": frame_base64}
+
+                await websocket.send_json(message)
+
                 await asyncio.sleep(0.03)
     except (WebSocketDisconnect, ConnectionClosed):
         print("Client disconnected")
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8080)

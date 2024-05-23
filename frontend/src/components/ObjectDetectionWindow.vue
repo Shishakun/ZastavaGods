@@ -8,7 +8,7 @@
         class="ml-72 w-4/6 outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500"
       >
         <div class="h-full">
-          <img ref="image" :src="imageSrc" class="h-full w-full rounded-xl"/>
+          <img ref="image" :src="imageSrc" class="h-full w-full rounded-xl" />
         </div>
       </div>
       <div
@@ -61,7 +61,17 @@
         >
           Журнал событий
         </p>
-        <div class="overflow-y-scroll custom-scrollbar"></div>
+        <div class="overflow-y-scroll custom-scrollbar">
+          <div
+            v-for="(item, index) in detectionData"
+            :key="index"
+            class="border-b border-gray-200 py-2 text-neutral-50"
+          >
+            <p><strong>Класс:</strong> {{ item.class }}</p>
+            <p><strong>Уверенность:</strong> {{ item.confidence }}</p>
+            <p><strong>Границы:</strong> {{ item.bounding_box }}</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -81,6 +91,7 @@ export default {
       videoStreamActive: false,
       websocket: null,
       imageSrc: "",
+      detectionData: [],
     };
   },
   methods: {
@@ -98,14 +109,14 @@ export default {
     startVideoStream() {
       this.websocket = new WebSocket("ws://localhost:8000/ws");
       this.websocket.onmessage = (event) => {
-        console.log(event.data)
-        const imageUrl = URL.createObjectURL(
-          new Blob([event.data], { type: "image/jpeg" })
-        );
+        console.log(event.data);
+        const message = JSON.parse(event.data);
+        const imageUrl = `data:image/jpeg;base64,${message.image}`;
         this.imageSrc = imageUrl;
-        console.log(this.imageSrc);
+        this.detectionData = message.message;
+        console.log(this.detectionData)
       };
-      console.log(imageUrl)
+      console.log(imageUrl);
       this.websocket.onopen = () => {
         console.log("WebSocket connection established.");
       };

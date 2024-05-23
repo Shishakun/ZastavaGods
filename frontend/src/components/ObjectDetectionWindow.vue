@@ -54,16 +54,16 @@
         <SidebarMain />
       </div>
       <div
-        class="ml-72 w-5/6 outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500"
+        class="ml-72 w-5/6 outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500 h-[600px]"
       >
         <p
           class="text-activeText duration-500 text-center pt-4 font-bold text-2xl"
         >
           Журнал событий
         </p>
-        <div class="overflow-y-scroll custom-scrollbar">
+        <div class="overflow-y-scroll custom-scrollbar h-[500px]">
           <div
-            v-for="(item, index) in detectionData"
+            v-for="(item, index) in reversedDetectionData"
             :key="index"
             class="border-b border-gray-200 py-2 text-neutral-50"
           >
@@ -114,7 +114,7 @@ export default {
         const imageUrl = `data:image/jpeg;base64,${message.image}`;
         this.imageSrc = imageUrl;
         this.detectionData = message.message;
-        console.log(this.detectionData)
+        console.log(this.detectionData);
       };
       console.log(imageUrl);
       this.websocket.onopen = () => {
@@ -134,7 +134,11 @@ export default {
       }
     },
   },
-  computed: {},
+  computed: {
+    reversedDetectionData() {
+      return this.detectionData.slice().reverse();
+    },
+  },
 };
 </script>
 

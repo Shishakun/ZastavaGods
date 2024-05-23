@@ -2,6 +2,7 @@ import Yamnet.yamnet.params as params
 import Yamnet.yamnet.yamnet as yamnet_model
 import pyaudio
 import librosa
+import csv
 import numpy as np
 from loguru import logger
 import threading
@@ -12,11 +13,16 @@ latest_result = None
 processing = False
 yamnet_classes = None
 
+
 def load_model():
     global yamnet, yamnet_classes
     yamnet = yamnet_model.yamnet_frames_model(params)
     yamnet.load_weights("Yamnet/yamnet/yamnet.h5")
-    yamnet_classes = yamnet_model.class_names("Yamnet/yamnet/yamnet_class_map.csv")
+    with open(
+        "Yamnet/yamnet/yamnet_class_map.csv", newline="", encoding="utf-8"
+    ) as csvfile:
+        yamnet_classes = [row["display_name"] for row in csv.DictReader(csvfile)]
+
 
 def process_audio():
     global stream, latest_result, processing
@@ -50,18 +56,22 @@ def process_audio():
     stream.close()
     p.terminate()
 
+
 def start_processing():
     global processing
     if not processing:
         processing = True
         threading.Thread(target=process_audio).start()
 
+
 def stop_processing():
     global processing
     processing = False
 
+
 def get_latest_result():
     global latest_result
     return latest_result if latest_result else "No result available"
+
 
 load_model()

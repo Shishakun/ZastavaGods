@@ -124,7 +124,7 @@ export default {
         const message = JSON.parse(event.data);
         const imageUrl = `data:image/jpeg;base64,${message.image}`;
         this.imageSrc = imageUrl;
-        this.detectionData = message.message.map((item) => {
+        const newDetectionData = message.message.map((item) => {
           const timestamp = new Date().toLocaleString();
           return {
             class: item.class,
@@ -134,6 +134,12 @@ export default {
             timestamp: timestamp,
           };
         });
+        newDetectionData.forEach((newItem) => {
+          if (!this.isSimilarEvent(newItem)) {
+            this.detectionData.push(newItem);
+          }
+        });
+
         console.log(this.detectionData);
       };
       console.log(imageUrl);
@@ -152,6 +158,21 @@ export default {
         this.websocket = null;
         this.imageSrc = ""; // Clear video stream on stop
       }
+    },
+    isSimilarEvent(newItem) {
+      return this.detectionData.some((existingItem) => {
+        const bb1 = newItem.bounding_box;
+        const bb2 = existingItem.bounding_box;
+
+        const distance = Math.sqrt(
+          Math.pow(bb1[0] - bb2[0], 2) +
+            Math.pow(bb1[1] - bb2[1], 2) +
+            Math.pow(bb1[2] - bb2[2], 2) +
+            Math.pow(bb1[3] - bb2[3], 2)
+        );
+
+        return distance < 50;
+      });
     },
   },
   computed: {

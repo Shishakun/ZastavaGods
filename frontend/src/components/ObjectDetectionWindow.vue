@@ -65,11 +65,21 @@
           <div
             v-for="(item, index) in reversedDetectionData"
             :key="index"
-            class="border-b border-gray-200 py-2 text-neutral-50 px-10"
+            class="border-b border-gray-200 py-2 text-neutral-50 px-10 flex gap-10"
           >
-            <p><strong>Класс:</strong> {{ item.class }}</p>
-            <p><strong>Уверенность:</strong> {{ item.confidence }}</p>
-            <p><strong>Границы:</strong> {{ item.bounding_box }}</p>
+            <div>
+              <p><strong>Класс:</strong> {{ item.class }}</p>
+              <p><strong>Уверенность:</strong> {{ item.confidence }}</p>
+              <p><strong>Границы:</strong> {{ item.bounding_box }}</p>
+            </div>
+            <div v-if="item.cropped_image" class="flex">
+              <p><strong>Объект:</strong></p>
+              <img
+                :src="item.cropped_image"
+                class="rounded-md ml-4"
+                alt="Cropped Object"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -113,7 +123,14 @@ export default {
         const message = JSON.parse(event.data);
         const imageUrl = `data:image/jpeg;base64,${message.image}`;
         this.imageSrc = imageUrl;
-        this.detectionData = message.message;
+        this.detectionData = message.message.map((item) => {
+          return {
+            class: item.class,
+            confidence: item.confidence,
+            bounding_box: item.bounding_box,
+            cropped_image: `data:image/jpeg;base64,${item.cropped_image}`,
+          };
+        });
         console.log(this.detectionData);
       };
       console.log(imageUrl);

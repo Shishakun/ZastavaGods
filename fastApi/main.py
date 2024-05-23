@@ -313,11 +313,20 @@ async def get_stream(websocket: WebSocket):
                         img, class_names[cls], org, font, fontScale, color, thickness
                     )
 
+                    cropped_img = img[y1:y2, x1:x2]
+
+                    _, cropped_jpeg = cv2.imencode(".jpg", cropped_img)
+                    cropped_frame_bytes = cropped_jpeg.tobytes()
+                    cropped_frame_base64 = base64.b64encode(cropped_frame_bytes).decode(
+                        "utf-8"
+                    )
+
                     data.append(
                         {
                             "class": class_names[cls],
                             "confidence": confidence,
                             "bounding_box": [x1, y1, x2, y2],
+                            "cropped_image": cropped_frame_base64,
                         }
                     )
                     await websocket.send_json(data)

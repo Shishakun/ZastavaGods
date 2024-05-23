@@ -65,7 +65,7 @@
           <div
             v-for="(item, index) in reversedDetectionData"
             :key="index"
-            class="border-b border-gray-200 py-2 text-neutral-50"
+            class="border-b border-gray-200 py-2 text-neutral-50 px-10"
           >
             <p><strong>Класс:</strong> {{ item.class }}</p>
             <p><strong>Уверенность:</strong> {{ item.confidence }}</p>

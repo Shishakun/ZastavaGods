@@ -68,6 +68,7 @@
             class="border-b border-gray-200 py-2 text-neutral-50 px-10 flex gap-10"
           >
             <div>
+              <p><strong>Камера:</strong> {{ item.cameraNumber }}</p>
               <p><strong>Время:</strong> {{ item.timestamp }}</p>
               <p><strong>Класс:</strong> {{ item.class }}</p>
               <p><strong>Уверенность:</strong> {{ item.confidence }}</p>
@@ -117,7 +118,7 @@ export default {
         this.startVideoStream();
       }
     },
-    startVideoStream() {
+    startVideoStream(cameraNumber) {
       this.websocket = new WebSocket("ws://localhost:8000/ws");
       this.websocket.onmessage = (event) => {
         console.log(event.data);
@@ -132,6 +133,7 @@ export default {
             bounding_box: item.bounding_box,
             cropped_image: `data:image/jpeg;base64,${item.cropped_image}`,
             timestamp: timestamp,
+            cameraNumber: cameraNumber,
           };
         });
         newDetectionData.forEach((newItem) => {

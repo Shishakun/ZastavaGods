@@ -31,6 +31,12 @@
           </router-link>
         </AssistantCategoryServiceSection>
       </div>
+      <div
+        @click="restartSystem"
+        class="flex justify-center w-full absolute bottom-[100px] cursor-pointer hover:bg-frameBackground py-3 duration-300 rounded-xl"
+      >
+        <RestartButton />
+      </div>
       <div class="flex justify-center w-full absolute bottom-8">
         <Switcher />
       </div>
@@ -41,15 +47,22 @@
 import AssistantCategoryService from "./AssistantCategoryService.vue";
 import AssistantCategoryServiceSection from "./AssistantCategoryServiceSection.vue";
 import BaseIcon from "./BaseIcon.vue";
+import RestartButton from "./RestartButton.vue";
 import Switcher from "./Switcher.vue";
+import axios from "axios";
 export default {
   components: {
     AssistantCategoryService,
     AssistantCategoryServiceSection,
     BaseIcon,
+    RestartButton,
     Switcher,
   },
-
+  methods: {
+    async restartSystem() {
+      
+    },
+  },
   computed: {
     services() {
       return [

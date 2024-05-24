@@ -4,6 +4,7 @@ import io
 import os
 from pathlib import Path
 
+import subprocess
 import psycopg2
 import numpy as np
 import pyaudio
@@ -45,7 +46,21 @@ FaceRecognition.encode_faces()
 
 class ImageRequest(BaseModel):
     image: str
+    
+CONTAINER_NAME = "your_container_name"
 
+@app.post("/restart")
+async def restart_container():
+    """Перезапускает Docker контейнер."""
+    try:
+        # Проверяем, запущен ли контейнер
+        subprocess.check_output(["docker", "container", "inspect", CONTAINER_NAME])
+
+        # Перезапускаем контейнер
+        subprocess.run(["docker", "restart", CONTAINER_NAME])
+        return {"message": "Контейнер успешно перезапущен"}
+    except subprocess.CalledProcessError:
+        raise HTTPException(status_code=404, detail="Контейнер не найден")
 
 @app.websocket("/ws/yamnet")
 async def yamnet_stream(websocket: WebSocket):
